@@ -1,7 +1,7 @@
 {
   "name": "qrdate",
-  "version": "0.1.8",
-  "description": "Signed date in a QR code",
+  "version": "0.2.0",
+  "description": "Trusted timestamp inside a QR code",
   "type": "module",
   "exports": {
     "./types": "./dist/index.d.ts",
@@ -20,6 +20,10 @@
     "build": "rm -rf dist && tsc"
   },
   "author": "qrdate.org + contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qrdate/qrdate.git"
+  },
   "devDependencies": {
     "@types/node": "^17.0.21",
     "tsm": "^2.2.1",
