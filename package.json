@@ -1,7 +1,7 @@
 {
   "name": "qrdate",
-  "version": "0.4.1",
-  "description": "Trusted timestamp inside a QR code",
+  "version": "0.4.2",
+  "description": "QR Date (QR Time): Signed timestamps inside QR codes for verifying dates in realtime reporting",
   "type": "module",
   "exports": {
     "./types": "./dist/index.d.ts",
@@ -19,7 +19,7 @@
     "test": "tsm node_modules/uvu/bin.js tests",
     "build": "rm -rf dist && tsc"
   },
-  "author": "qrdate.org + contributors",
+  "author": "QRDate.org + contributors",
   "repository": {
     "type": "git",
     "url": "https://github.com/qrdate/qrdate.git"
