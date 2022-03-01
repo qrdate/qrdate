@@ -1,17 +1,19 @@
-# QR Date
+# QR Date v1
 
-This is the reference TS implementation for [QR Date](https://qrdate.org), a trusted timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads, and live streams.
+This is the reference TS implementation for the first version of [QR Date](https://qrdate.org), a trusted timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads and live streams.
 
 ### What is it for?
 
-QR Date is a specification for verifying the date a photo or video was taken by having a trusted third party sign timestamps and encode them in a QR code visible in the frame. It can be used to verify the date in rapidly disseminated photo- or videography where a large amount of people will be able to see and verify the code shown within a reasonable time from publishing (which is measured in seconds to minutes today). It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up in a photo instead of writing the date on a piece of paper. It does not work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard media against the *future*.
+QR Date is a specification for verifying the date a photo or video was taken by having a trusted third party sign timestamps and encode them in a QR code visible in the frame. It can be used to verify the date in rapidly disseminated photo- or videography where a large amount of people will be able to see and verify the code shown within a reasonable time from publishing, which is measured in seconds to minutes today.
+
+It provides a kind of social proof of other people observing a clock, given to you by a *trusted third party*, that you are holding up in a photo instead of writing the date on a piece of paper. It does *not* work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard media against the *future*. Therefore, unseen QR Dates are meant to have a lifespan after which they should be considered tainted.
 
 **The need to use something like QR Date arises, when..**
 
 1. You have a photograph or video you want to make and send to many people, rapidly.
 2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you took the photo or video.
 
-The traditional method is to write the current date on a piece of paper or, if one is available, hold up a newspaper from the day. Besides requiring materials, neither does not *definitely* verify that the event in the picture *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo, in a reasonably non-fakeable way*, it is then verifiable that you are **photographing the near-present**.
+The traditional method is to write the current date on a piece of paper or, if one is available, hold up a newspaper from the day. Besides requiring materials, neither does not *definitely* verify that the event in the picture *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo, in a reasonably non-fakeable way*, it is then provable beyond a reasonable doubt that you indeed are **photographing the near-present**.
 
 When disseminated rapidly to hundreds or thousands of people, a QR Date displayed in a photo or video can constitute social proof — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
 
@@ -20,7 +22,9 @@ The physical act of using a QR Date involves either:
 1. Holding up a smartphone or tablet in view of the camera, displaying the QR Date from a website or broadcast TV (in case a TV station would be broadcasting it), or
 2. Holding up a printed version of the QR Date in a photo or video, replacing regular written text on paper.
 
-It is also possible to implement QR Dates as a middleman service for apps, which would then be acting as the trusted third party; for example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around in the frame, switch places, or other motion to make it harder to superimpose another code later.
+It is also possible to implement QR Dates as a middleman service for app backends, which would then be acting as the trusted third party.
+
+For example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around in the frame, switch places, or other motion to make it harder to superimpose another code later.
 
 ### How does it work?
 
@@ -136,7 +140,7 @@ console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY---
 ```
 
 
-## QR Date V1 Dynamic spec
+## QR Date v1 Dynamic spec
 
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
 
@@ -158,7 +162,7 @@ Parameter | Explanation
 
 **Do not point to qrdate.org in your implementation**, as we do not host your private key! `https://qrdate.org/v` is only a placeholder for your domain and hosting setup.
 
-## QR Date V1 Static spec
+## QR Date v1 Static spec
 
 Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the URL base `qrdate://` and you will a URI in the correct format:
 
