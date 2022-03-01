@@ -293,6 +293,11 @@ This type of URL can be parsed without external parties as it contains both the 
 
 We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification to keep things interoperable.
 
+### INTELLECTUAL PROPERTY
+
+QR Date, QR Time, and QRDate.org are the property of QRDate.org.  
+Contact: [hi@qrdate.org](mailto:hi@qrdate.org)
+
 ### THIS LIBRARY IS LICENSED UNDER:
 
 MIT &copy; QRDate.org + contributors
