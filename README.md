@@ -33,7 +33,7 @@ For example, when uploading photos through a messenger service, the service can 
 
 ### How does it work?
 
-The principle is very simple. A timestamp is generated on the server and attached to a bit of randomness. They are then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp, the bit of randomness, and the signature. The signature can also be verified using a separately published public key. Technical explanation follows.
+The principle is very simple. A timestamp is generated on the server, then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp and the signature. The signature can also be verified using a separately published public key.
 
 ### Types of QR Dates
 

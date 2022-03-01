@@ -1,6 +1,6 @@
 {
   "name": "qrdate",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "QR Date (QR Time): Signed timestamps inside QR codes for verifying dates in realtime reporting",
   "type": "module",
   "exports": {
