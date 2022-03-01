@@ -64,7 +64,7 @@ test('[createStaticQRDate] creates a static QR Date', () => {
   assert.is(url.searchParams.get('f'), qrDate.fingerprint);
 });
 
-test('[createStaticQRDate] throws when you do not define private key or when private key is mangled', () => {
+test('[createStaticQRDate] throws when you do not define public key or when public key is mangled', () => {
 
   assert.throws(() => { createStaticQRDate({} as any)});
 
@@ -79,6 +79,50 @@ test('[verifyDynamicQRDate] returns true on a valid QR Date', () => {
     signature: TEST_SIGNATURE, 
     timestamp: TEST_TIMESTAMP,
     privateKey: TEST_PRIVATE_KEY,
+  });
+
+  assert.type(valid, 'boolean');
+  assert.ok(valid);
+});
+
+test('[verifyDynamicQRDate] returns false on an invalid QR Date', () => {
+  const valid = verifyDynamicQRDate({
+    signature: TEST_SIGNATURE+'foo', 
+    timestamp: TEST_TIMESTAMP+123,
+    privateKey: TEST_PRIVATE_KEY,
+  });
+
+  assert.type(valid, 'boolean');
+  assert.not.ok(valid);
+});
+
+test('[verifyDynamicQRDate] throws when you do not define signature, timestamp or either private or public key', () => {
+
+  assert.throws(() => { verifyDynamicQRDate({} as any)});
+
+  assert.throws(() => { verifyDynamicQRDate({
+    timestamp: TEST_TIMESTAMP,
+    privateKey: TEST_PRIVATE_KEY,
+  } as any)});
+
+  assert.throws(() => { verifyDynamicQRDate({
+    signature: TEST_SIGNATURE, 
+    privateKey: TEST_PRIVATE_KEY,
+  } as any)});
+
+  assert.throws(() => { verifyDynamicQRDate({
+    signature: TEST_SIGNATURE+'foo', 
+    timestamp: TEST_TIMESTAMP+123,
+  })})
+
+});
+
+test('[verifyStaticQRDate] returns true on a valid QR Date', () => {
+  const valid = verifyStaticQRDate({
+    signature: TEST_SIGNATURE, 
+    timestamp: TEST_TIMESTAMP,
+    fingerprint: TEST_FINGERPRINT,
+    publicKey: TEST_PRIVATE_KEY,
   });
 
   assert.type(valid, 'boolean');

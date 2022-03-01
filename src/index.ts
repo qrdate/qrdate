@@ -37,6 +37,21 @@ export type StaticQRDate = {
   fingerprint: string;
 };
 
+function formatPrivateKey(privateKey: KeyLike) {
+  // If we're being passed base64url format keys, try to turn them into PEM keys
+  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
+  }
+  return privateKey;
+}
+
+function formatPublicKey(publicKey: KeyLike) {
+  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
+    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
+  }
+  return publicKey;
+}
+
 /**
  * Create a DYNAMIC QR Date object with the current time.
  * The URL can be formatted using the `formatter` function, which has a signature of `CustomQRDateURLFormatter`.
@@ -59,6 +74,8 @@ export function createDynamicQRDate({
 }): DynamicQRDate {
   if (!privateKey) throw 'privateKey is required';
   if (!urlBase && !formatter) throw 'urlBase or formatter is required';
+
+  privateKey = formatPrivateKey(privateKey);
   
   // If there's no public key passed, derive one from the private key
   const publicKey = createPublicKey(privateKey).export({ format: 'der', type: 'spki' }).toString('base64url');
@@ -101,7 +118,9 @@ export function createStaticQRDate({
   privateKey: KeyLike;
 }): StaticQRDate {
   if (!privateKey) throw 'privateKey is required';
-  
+
+  privateKey = formatPrivateKey(privateKey);
+
   // If there's no public key passed, derive one from the private key
   const publicKey = createPublicKey(privateKey);
 
@@ -128,26 +147,11 @@ export function createStaticQRDate({
   }
 }
 
-function formatPrivateKey(privateKey: KeyLike) {
-  // If we're being passed base64url format keys, try to turn them into PEM keys
-  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
-  }
-  return privateKey;
-}
-
-function formatPublicKey(publicKey: KeyLike) {
-  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
-    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
-  }
-  return publicKey;
-}
-
 /**
  * Verify that the signature on a signed QR Date string is valid.
  * For more info, see https://github.com/qrdate/qrdate/tree/main#verifydynamicqrdate.
  * @param {Object} obj
- * @param {number} obj.timestamp Timestamp
+ * @param {string|number} obj.timestamp Timestamp
  * @param {string} obj.signature Signature
  * @param {KeyLike} [obj.privateKey] Private key to use - OR
  * @param {KeyLike} [obj.publicKey] Public key to use
@@ -159,7 +163,7 @@ export function verifyDynamicQRDate({
   privateKey,
   publicKey,
 }:{
-  timestamp: number;
+  timestamp: string|number;
   signature: string;
   privateKey?: KeyLike;
   publicKey?: KeyLike;
@@ -179,10 +183,10 @@ export function verifyDynamicQRDate({
 /**
  * Verify that the signature on a static signed QR Date string is valid based on its fingerprint.
  * @param {Object} obj
- * @param {number} obj.timestamp Timestamp
+ * @param {string|number} obj.timestamp Timestamp
  * @param {string} obj.signature Signature
  * @param {string} obj.fingerprint Public key fingerprint
- * @param {KeyLike} [obj.publicKey] Public key to use
+ * @param {KeyLike} obj.publicKey Public key to use to verify fingerprint
  * @returns {boolean} True if valid
  */
 export function verifyStaticQRDate({
@@ -191,10 +195,9 @@ export function verifyStaticQRDate({
   fingerprint,
   publicKey,
 }:{
-  timestamp: number;
+  timestamp: string|number;
   signature: string;
   fingerprint: string;
-  privateKey?: KeyLike;
   publicKey?: KeyLike;
 }): boolean {
   if(!timestamp) throw 'timestamp is required';

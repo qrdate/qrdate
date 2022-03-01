@@ -53,7 +53,7 @@ npm i --save qrdate
 
 ## API
 
-### `createDynamicQRDate( params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
+### `createDynamicQRDate(params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
 
 Create a Dynamic QR Date spec object with web-based verification. Use this function to create QR Date that users can verify on your website. The client flow is:
 
@@ -69,7 +69,7 @@ Attribute    | Type                     | Required                      | Explan
 -------------|--------------------------|-------------------------------|--------------------
 `params.urlBase`    | string                   | Either `params.urlBase` or `params.formatter` are required. If `params.formatter` is defined, `params.urlBase` is not used.  | Your verification base URL - do NOT change this once you have decided on it without some kind of redirection in place! All your QR codes will start with the base URL.
 `params.formatter`  | CustomQRDateURLFormatter | See above | A formatter
-`params.privateKey` | KeyLike (`string / Buffer / KeyObject`) | Yes | Your ed25519 private key
+`params.privateKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. The key *can* be base64url encoded, and the function will try to parse it for you.
 
 #### Output object
 
@@ -106,7 +106,7 @@ console.log(qrDateDynamic);
 
 ```
 
-### `createStaticQRDate( params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
+### `createStaticQRDate(params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
 
 Create a Static QR Date spec object with offline verification. Use this function to create QR Date that users can verify *without* your website. The client flow is:
 
@@ -128,7 +128,7 @@ You need to specify two of these when calling `createDynamicQRDate()`
 
 Attribute    | Type                     | Required                      | Explanation
 -------------|--------------------------|-------------------------------|--------------------
-`params.privateKey` | KeyLike (`string / Buffer / KeyObject`) | Yes | Your ed25519 private key
+`params.privateKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. The key *can* be base64url encoded, and the function will try to parse it for you.
 
 #### Output object
 
@@ -169,9 +169,20 @@ console.log(qrDateStatic);
 //
 ```
 
-### `verifyDynamicQRDate`
+### `verifyDynamicQRDate(params: { signature: string; timestamp: string|number; privateKey?: KeyLike; publicKey?: KeyLike }): boolean`
 
-Verify that the signature on a signed QR Date string is valid.
+Verify that the signature on a signed dynamic QR Date timestamp is valid.
+
+#### Input object
+
+You need to specify three of these when calling `verifyDynamicQRDate()`
+
+Attribute    | Type                     | Required                      | Explanation
+-------------|--------------------------|-------------------------------|--------------------
+`params.signature`  | string            | Yes      | Signature passed from client
+`params.timestamp`  | number / string            | Yes      | Signature passed from client
+`params.privateKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. The key *can* be base64url encoded, and the function will try to parse it for you.
+`params.publicKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. Same as above.
 
 #### Example
 
@@ -196,7 +207,40 @@ console.log(valid);
 // boolean ---^
 ```
 
-### `generateKeys`
+### `verifyStaticQRDate(params: { signature: string; timestamp: string|number; fingerprint: string; publicKey: KeyLike }): boolean`
+
+Verify that the signature on a signed static QR Date timestamp is valid.
+
+#### Input object
+
+You need to specify **all** of these when calling `verifyDynamicQRDate()`
+
+Attribute            | Type                                | Required                      | Explanation
+---------------------|-------------------------------------|-------------------------------|--------------------
+`params.signature`   | string                              | Yes                           | Signature passed from qrdate:// URL
+`params.timestamp`   | number / string                     | Yes                           | Timestamp passed from qrdate:// URL
+`params.fingerprint` | string                              | Yes                           | Public key fingerprint passed from qrdate:// URL
+`params.publicKey` | KeyLike (string / Buffer / KeyObject) | Yes                           | Ed25519 public key corresponding to the fingerprint. The key *can* be base64url encoded, and the function will try to parse it for you.
+
+**Note** that this function does not accept a private key. You are supposed to use this in an implementing *client* application, where you should not store private keys in the key store.
+
+#### Example
+
+```ts
+import { verifyStaticQRDate } from 'qrdate';
+
+const valid = verifyDynamicQRDate({
+  timestamp: 1646147373409,
+  signature: 'SARv4c8pJYVxqEK8BCcPy8dgXEAkyWDPRAhvT70RotaHgnko1BkBh-maNzqAicDzqcz7EV65OwLDno7HWT1iAg',
+  fingerprint: 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE',
+  publicKey: `-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAyHAuTvSG6RZaKGOfzI6iZ8NVaebZpFAFEN/85o6c3nE=\n-----END PUBLIC KEY-----` // or Buffer or KeyObject
+});
+
+console.log(valid);
+// boolean ---^
+```
+
+### `generateKeys(): { privateKey: string|KeyObject; publicKey: string|KeyObject }`
 
 Use to generate a pair of keys. You can use only the `privateKey` to interact with the library - any public keys that are required can be derived from it. **Store your private key in a safe place!** When used with QR Date it is essentially *a key to the future*.
 
