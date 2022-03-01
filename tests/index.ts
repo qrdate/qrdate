@@ -9,11 +9,12 @@ import { test } from 'uvu';
 const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEICD8k5Poo6PsLJ6PLN7HDzVnwkMZu5bmnkYDRhkF7iq0
 -----END PRIVATE KEY-----`;
-const TEST_PUBLIC_KEY = ` -----BEGIN PUBLIC KEY-----
+const TEST_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MCowBQYDK2VwAyEATV2v3k6Z/BIpLbIEeBpc+IzgbKtDK7QVEoMMA8NgStg=
 -----END PUBLIC KEY-----`;
 const TEST_TIMESTAMP = 1646141569644;
 const TEST_SIGNATURE = 'xnNQ8mAM-xAlWGU4DjFAIB6Yy7oi2BDh37m6SYLiiJ0q73ObjYa05P3XwMgiGnXq2NYM641neVMu5BTxUFdABw';
+const TEST_FINGERPRINT = '';
 
 test('[createDynamicQRDate] creates a dynamic QR Date', () => {
   const qrDate = createDynamicQRDate({
@@ -129,7 +130,7 @@ test('[verifyStaticQRDate] returns true on a valid QR Date', () => {
   assert.ok(valid);
 });
 
-test('[verifyDynamicQRDate] returns false on an invalid QR Date', () => {
+test('[verifyStaticQRDate] returns false on an invalid QR Date', () => {
   const valid = verifyDynamicQRDate({
     signature: TEST_SIGNATURE+'foo', 
     timestamp: TEST_TIMESTAMP+123,
@@ -140,23 +141,28 @@ test('[verifyDynamicQRDate] returns false on an invalid QR Date', () => {
   assert.not.ok(valid);
 });
 
-test('[verifyDynamicQRDate] throws when you do not define signature, timestamp or either private or public key', () => {
+test('[verifyStaticQRDate] throws when you do not define signature, timestamp, fingerprint or public key', () => {
 
   assert.throws(() => { verifyDynamicQRDate({} as any)});
 
   assert.throws(() => { verifyDynamicQRDate({
     timestamp: TEST_TIMESTAMP,
-    privateKey: TEST_PRIVATE_KEY,
+    publicKey: TEST_PUBLIC_KEY,
   } as any)});
 
   assert.throws(() => { verifyDynamicQRDate({
     signature: TEST_SIGNATURE, 
-    privateKey: TEST_PRIVATE_KEY,
+    publicKey: TEST_PUBLIC_KEY,
   } as any)});
 
   assert.throws(() => { verifyDynamicQRDate({
     signature: TEST_SIGNATURE+'foo', 
     timestamp: TEST_TIMESTAMP+123,
+  })})
+
+  assert.throws(() => { verifyDynamicQRDate({
+    fingerprint: TEST_FINGERPRINT, 
+    publicKey: TEST_TIMESTAMP+123,
   })})
 
 });

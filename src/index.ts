@@ -24,7 +24,6 @@ export type DynamicQRDate = {
   timestamp: number;
   url: string;
   signature: string;
-  publicKey: string;
 };
 
 /**
@@ -58,9 +57,9 @@ function formatPublicKey(publicKey: KeyLike) {
  * You need to provide either the urlBase or formatter function. If you provide a formatter, urlBase is ignored.
  * For more info, see https://github.com/qrdate/qrdate/tree/main#createdynamicqrdate.
  * @param {Object} obj
- * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
  * @param {KeyLike} obj.privateKey Private key to use
- * @param {CustomQRDateURLFormatter} obj.[formatter] Custom URL formatter function
+ * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
+ * @param {CustomQRDateURLFormatter} [obj.formatter] Custom URL formatter function
  * @returns {DynamicQRDate} Dynamic QR Date object
  */
 export function createDynamicQRDate({
@@ -77,9 +76,6 @@ export function createDynamicQRDate({
 
   privateKey = formatPrivateKey(privateKey);
   
-  // If there's no public key passed, derive one from the private key
-  const publicKey = createPublicKey(privateKey).export({ format: 'der', type: 'spki' }).toString('base64url');
-
   // Generate a timestamp
   const timestamp = new Date().getTime();
 
@@ -98,25 +94,16 @@ export function createDynamicQRDate({
     timestamp,
     url,
     signature,
-    publicKey,
   }
 }
 
 /**
  * Create a STATIC QR Date object with the current time.
- * The URL can be formatted using the `formatter` function, which has a signature of `CustomQRDateURLFormatter`.
- * You need to provide either the urlBase or formatter function. If you provide a formatter, urlBase is ignored.
- * For more info, see https://github.com/qrdate/qrdate/tree/main#createqrdate.
- * @param {Object} obj
- * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
- * @param {KeyLike} obj.privateKey Private key to use
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#createstaticqrdate.
+ * @param {KeyLike} privateKey Private key to use
  * @returns {StaticQRDate} QR Date object
  */
-export function createStaticQRDate({
-  privateKey,
-}: {
-  privateKey: KeyLike;
-}): StaticQRDate {
+export function createStaticQRDate(privateKey: KeyLike): StaticQRDate {
   if (!privateKey) throw 'privateKey is required';
 
   privateKey = formatPrivateKey(privateKey);
@@ -129,7 +116,6 @@ export function createStaticQRDate({
 
   // Sign the timestamp
   const signature = sign(timestamp, privateKey);
-
   const fingerprint = createFingerprint(publicKey);
 
   // Create the QR code url
@@ -153,30 +139,22 @@ export function createStaticQRDate({
  * @param {Object} obj
  * @param {string|number} obj.timestamp Timestamp
  * @param {string} obj.signature Signature
- * @param {KeyLike} [obj.privateKey] Private key to use - OR
- * @param {KeyLike} [obj.publicKey] Public key to use
+ * @param {KeyLike} obj.publicKey Public key to use
  * @returns {boolean} True if valid
  */
 export function verifyDynamicQRDate({
   timestamp,
   signature,
-  privateKey,
   publicKey,
 }:{
   timestamp: string|number;
   signature: string;
-  privateKey?: KeyLike;
   publicKey?: KeyLike;
 }): boolean {
   if(!timestamp) throw 'timestamp is required';
   if(!signature) throw 'signature is required';
-  if(!publicKey && !privateKey) throw 'privateKey or publicKey is required';
-
-  privateKey = formatPrivateKey(privateKey);
+  if(!publicKey) throw 'publicKey is required';
   publicKey = formatPublicKey(publicKey);
-
-  // If there's a private key passed, derive a public key first if one doesn't exist
-  if (!publicKey && privateKey) publicKey = createPublicKey(privateKey);
   return verify(timestamp, publicKey, signature);
 }
 
@@ -209,9 +187,6 @@ export function verifyStaticQRDate({
 
   // If there's a private key passed, derive a public key first if one doesn't exist
   const verifyFingerprint = createFingerprint(publicKey);
-
-  console.log('verifyFingerprint', verifyFingerprint)
-  console.log(fingerprint);
 
   if(verifyFingerprint !== fingerprint) return false;
   return verify(timestamp, publicKey, signature);
