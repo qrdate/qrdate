@@ -96,8 +96,8 @@ console.log(qrDateStatic);
 //
 // In the above url, `v` has been added after qrdate:// automatically.
 // If you are making your own implementation, be sure to include the `v` for compatibility.
-// A static URI should always start with `qrdate://v` to keep it universal and not to clutter the produced QR code further.
-// Please see the spec for V1 Static URIs for further info.
+// A static URL should always start with `qrdate://v` to keep it universal and not to clutter the produced QR code further.
+// Please see the spec for V1 Static URLs for further info.
 //
 ```
 
@@ -170,7 +170,7 @@ Parameter | Explanation
 
 ## QR Date v1 Static spec
 
-Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the base `qrdate://` and you will a URI in the correct format:
+Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the base `qrdate://` and you will a URL in the correct format:
 
 ```
 qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
@@ -178,7 +178,7 @@ qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Y
 
 ### Required origin and pathname
 
-**All** v1 static URIs should start with `qrdate://v` and then immediately proceed to the query parameters. We recommend you do **not** add your own parameters or change the URI format in any way.
+**All** v1 static URLs should start with `qrdate://v` and then immediately proceed to the query parameters. We recommend you do **not** add your own parameters or change the URL format in any way.
 
 ### Required query parameters
 

@@ -89,7 +89,7 @@ test('[createQRDateURL] creates a valid url with a custom formatter', () => {
   assert.is(url.searchParams.get('e'), TEST_SALT);
 });
 
-test('[createQRDateURL] creates a valid qrdate:// URI', () => {
+test('[createQRDateURL] creates a valid qrdate:// URL', () => {
   const publicKey = createPublicKey(TEST_PRIVATE_KEY).export({ format: 'der', type: 'spki' }).toString('base64url');
   
   const url = new URL(createQRDateURL({
