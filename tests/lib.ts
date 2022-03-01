@@ -80,6 +80,7 @@ test('[createQRDateURL] creates a valid url with a custom formatter', () => {
     salt: TEST_SALT
   }));
 
+  assert.is(url.host, 'foo.bar');
   assert.is(url.searchParams.get('s'), TEST_SIGNATURE);
   assert.is(url.searchParams.get('t'), TEST_TIMESTAMP.toString());
   assert.is(url.searchParams.get('e'), TEST_SALT);

@@ -14,7 +14,7 @@ We welcome contributions and people adopting this idea into other languages and 
 
 For more information, please see [qrdate.org](https://qrdate.org).
 
-## QR Date spec: Hosting a verification page
+## Dynamic QR Date spec — Hosting a verification page
 
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the QR code, so it can be shorter.
 
@@ -31,7 +31,7 @@ Parameter | Type   | Explanation
 `s`       | string | Signature
 `e`       | string | Random salt (32 bytes by default) - `e` for entropy
 
-## QR Date spec: Not hosting a verification page (static)
+## Static QR Date spec — Not hosting a verification page
 
 **You can use QR Date without hosting a verification page.** Use the URL base `qrdate://` and `createQRDate` will include the public key in the URL:
 
@@ -46,7 +46,7 @@ Parameter | Type   | Explanation
 `e`       | string | Random salt (32 bytes by default) - `e` for entropy
 `p`       | string | Public key to use
 
-This type of URL can be parsed by itself as it contains both the signature and public key.
+This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
 
 ## Using this library
 
@@ -56,19 +56,27 @@ This type of URL can be parsed by itself as it contains both the signature and p
 npm i --save qrdate
 ```
 
+### `generateKeys`
+
+Use to generate a pair of keys. You can use only the `privateKey` to interact with the library - any public keys that are required can be derived from it. **Store your private key in a safe place!** When used with QR Date it is essentially *a key to the future*.
+
 ### `createQRDate`
 
-Use `createQRDate` to create a QR Date spec object. Pass the generated `url` property to a QR code generator.
+Create a QR Date spec object. Pass the generated `url` property to a QR code generator.
 
 ```ts
 import { createQRDate, generateKeys } from 'qrdate';
 
-const qrDate = createQRDate({
+//
+// Generating a V1 Dynamic URL:
+//
+
+const qrDateDynamic = createQRDate({
   baseUrl: 'https://localhost',
   privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
 });
 
-console.log(qrDate);
+console.log(qrDateDynamic);
 // -----------^
 // {
 //   timestamp: 1646109781467,
@@ -77,11 +85,30 @@ console.log(qrDate);
 //   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
 //   publicKey: "MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg"
 // }
+
+//
+// Generating a V1 Static URL:
+// 
+
+const qrDateStatic = createQRDate({
+  baseUrl: 'qrdate://',
+  privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
+});
+
+console.log(qrDateStatic);
+// -----------^
+// {
+//   timestamp: 1646109781467,
+//   salt: "bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
+//   url: "qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg",
+//   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
+//   publicKey: "MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg"
+// }
 ```
 
 ### `verifyQRDate`
 
-Use `verifyQRDate` to verify that the signature on a signed QR Date string is valid. Pass the generated `url` property to a QR code generator.
+Verify that the signature on a signed QR Date string is valid.
 
 ```ts
 import { verifyQRDate, generateKeys } from 'qrdate';

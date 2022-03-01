@@ -105,5 +105,5 @@ export function createQRDateURL({
   if (urlBase.startsWith('qrdate://')) {
     return `${urlBase}/v?s=${signature}&t=${timestamp}&e=${salt}?p=${publicKey}`;
   }
-  return `${urlBase}/v?s=${signature}&t=${timestamp}&e=${salt}`;
+  return `${urlBase}v?s=${signature}&t=${timestamp}&e=${salt}`;
 }
