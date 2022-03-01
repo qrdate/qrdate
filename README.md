@@ -8,14 +8,16 @@ For more information, please see [qrdate.org](https://qrdate.org).
 
 ### What is it for?
 
-QR Date is a specification for verifying the date in (near-) real-time photojournalism and live streams. It does not work against the past (taking snapshots of the produced codes and using them later) but can be used to verify the date in rapidly disseminated information where a large amount of people will be able to see and verify the code within a reasonable time from publishing, which is measured in minutes or hours today. It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up.
+QR Date is a specification for verifying the date in (near-) real-time photojournalism and live streams via signing timestamps and encoding them in a QR code. It can be used to verify the date in rapidly disseminated information where a large amount of people will be able to see and verify the code within a reasonable time from publishing, which is measured in minutes or hours today. It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up. It does not work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard against the *future*.
 
-The need to use something like this arises in this situation:
+**The need to use something like QR Date arises, when..**
 
-1. You have evidence you want to photograph and send to many people, rapidly.
-2. You need to verify that the subject you are photographing *happened or existed* at the moment you made the evidence.
+1. You have a photograph or video you want to make and send to many people, rapidly.
+2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you made the photo or video.
 
-The traditional method is to write the current date on a piece of paper, or if one is available, hold up a newspaper from the day. Besides requiring materials, neither is **definitely** verifiable in the sense that the picture you are sending *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo*, it is then verifiable that you are photographing the *near-present*. When disseminated rapidly to hundreds or thousands of people, it can constitute **social proof** — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
+The traditional method is to write the current date on a piece of paper or, if one is available, hold up a newspaper from the day. Besides requiring materials, neither does not *definitely* verify that the event in the picture *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo, in a reasonably non-fakeable way*, it is then verifiable that you are **photographing the near-present**.
+
+When disseminated rapidly to hundreds or thousands of people, a QR Date displayed in a photo or video can constitute social proof — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
 
 The physical act of using a QR Date involves either:
 
