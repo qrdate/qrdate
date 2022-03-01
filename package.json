@@ -1,6 +1,6 @@
 {
   "name": "qrdate",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Signed date in a QR code",
   "type": "module",
   "exports": {

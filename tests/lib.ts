@@ -9,7 +9,7 @@ const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw
 -----END PRIVATE KEY-----`;
 
-const TEST_URL_BASE = 'https://localhost'
+const TEST_URL_BASE = 'https://localhost/v'
 const TEST_TIMESTAMP = 1646109781467;
 const TEST_SALT = 'bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
 const TEST_STRING_TO_SIGN = '1646109781467bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
@@ -57,7 +57,7 @@ test('[createQRDateURL] creates a valid url', () => {
     salt: TEST_SALT
   }));
 
-  assert.is(url.origin, TEST_URL_BASE);
+  assert.is(url.origin, TEST_URL_BASE.split('/v')[0]);
   assert.is(url.pathname, '/v');
   assert.is(url.searchParams.get('s'), TEST_SIGNATURE);
   assert.is(url.searchParams.get('t'), TEST_TIMESTAMP.toString());

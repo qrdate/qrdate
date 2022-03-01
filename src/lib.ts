@@ -108,5 +108,5 @@ export function createQRDateURL({
     return `qrdate://v?s=${signature}&t=${timestamp}&e=${salt}&p=${publicKey}`;
   }
   // V1 Dynamic type URL
-  return `${base.origin}/v?s=${signature}&t=${timestamp}&e=${salt}`;
+  return `${base.origin}${base.pathname}?s=${signature}&t=${timestamp}&e=${salt}`;
 }
