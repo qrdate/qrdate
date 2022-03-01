@@ -102,8 +102,11 @@ export function createQRDateURL({
       salt
     });
   }
+  const base = new URL(urlBase);
   if (urlBase.startsWith('qrdate://')) {
-    return `${urlBase}v?s=${signature}&t=${timestamp}&e=${salt}&p=${publicKey}`;
+    // V1 Static type URI
+    return `qrdate://v?s=${signature}&t=${timestamp}&e=${salt}&p=${publicKey}`;
   }
-  return `${urlBase}/v?s=${signature}&t=${timestamp}&e=${salt}`;
+  // V1 Dynamic type URL
+  return `${base.origin}/v?s=${signature}&t=${timestamp}&e=${salt}`;
 }
