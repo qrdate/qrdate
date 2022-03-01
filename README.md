@@ -191,14 +191,19 @@ Parameter | Explanation
 
 This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
 
+## Contact
+
+- Website: [https://QRDate.org](https://QRDate.org)
+- Twitter: [@QRDate](https://twitter.com/QRDate)
+
 ## License
 
 We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification to keep things interoperable.
 
 ### THIS LIBRARY IS LICENSED UNDER:
 
-MIT &copy; [qrdate.org](https://qrdate.org) + contributors
+MIT &copy; QRDate.org + contributors
 
 ### THE QR DATE SPEC IS LICENSED UNDER:
 
-CC Attribution 4.0 International (CC BY 4.0) &copy; [qrdate.org](https://qrdate.org) + contributors
+CC Attribution 4.0 International (CC BY 4.0) &copy; QRDate.org + contributors
