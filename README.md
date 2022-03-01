@@ -43,22 +43,14 @@ You can find the exact spec for both below the usage.
 npm i --save qrdate
 ```
 
-### `generateKeys`
-
-```ts
-import { createQRDate, generateKeys } from 'qrdate';
-const { privateKey, publicKey } = generateKeys();
-console.log(privateKey);
-```
-
-Use to generate a pair of keys. You can use only the `privateKey` to interact with the library - any public keys that are required can be derived from it. **Store your private key in a safe place!** When used with QR Date it is essentially *a key to the future*.
-
 ### `createQRDate`
 
-Create a QR Date spec object. Pass the generated `url` property that you get back to a QR code generator.
+Create a QR Date spec object. Pass the generated `url` property that you get back to a QR code generator and display to user.
+
+#### Example
 
 ```ts
-import { createQRDate, generateKeys } from 'qrdate';
+import { createQRDate } from 'qrdate';
 
 //
 // Generating a V1 Dynamic URL:
@@ -103,8 +95,10 @@ console.log(qrDateStatic);
 
 Verify that the signature on a signed QR Date string is valid.
 
+#### Example
+
 ```ts
-import { verifyQRDate, generateKeys } from 'qrdate';
+import { verifyQRDate } from 'qrdate';
 
 const valid = verifyQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
@@ -125,6 +119,22 @@ const valid = verifyQRDate({
 console.log(valid);
 // boolean ---^
 ```
+
+### `generateKeys`
+
+Use to generate a pair of keys. You can use only the `privateKey` to interact with the library - any public keys that are required can be derived from it. **Store your private key in a safe place!** When used with QR Date it is essentially *a key to the future*.
+
+#### Example
+
+```ts
+import { generateKeys } from 'qrdate';
+const { privateKey, publicKey } = generateKeys(true);
+// true will return keys as string (default)
+// false returns them as KeyObjects
+console.log(privateKey); // -----BEGIN PRIVATE KEY----- ... -----END PRIVATE KEY-----
+console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY-----
+```
+
 
 ## QR Date V1 Dynamic spec
 

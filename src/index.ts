@@ -31,6 +31,7 @@ export type QRDate = {
  * Create a QR Date object with the current time.
  * The URL can be formatted using the `formatter` function, which has a signature of `CustomQRDateURLFormatter`.
  * You need to provide either the urlBase or formatter function. If you provide a formatter, urlBase is ignored.
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#createqrdate.
  * @param {Object} obj
  * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
  * @param {KeyLike} obj.privateKey Private key to use
@@ -84,7 +85,8 @@ export function createQRDate({
 }
 
 /**
- * Verify a QR Date
+ * Verify that the signature on a signed QR Date string is valid.
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#verifyqrdate.
  * @param {Object} obj
  * @param {number} obj.timestamp Timestamp
  * @param {string} obj.salt Salt value
@@ -116,7 +118,7 @@ export function verifyQRDate({
 }
 
 /**
- * Generate ed25519 key pair and return it as string or KeyObject
+ * Generate ed25519 key pair and return them as string or KeyObject
  * @param {boolean} [asString] Return keys as string, not KeyObject (default true)
  * @returns {object} { privateKey: string | KeyObject, publicKey: string | KeyObject }
  */
