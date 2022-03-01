@@ -1,4 +1,5 @@
 import {
+  createHash,
   createPublicKey,
   generateKeyPairSync,
   randomBytes,
@@ -6,9 +7,9 @@ import {
 } from 'node:crypto';
 
 import {
-  createQRDateURL,
-  formatClearTextSignature,
-  generateSalt,
+  createDynamicQRDateURL,
+  createFingerprint,
+  createStaticQRDateURL,
   sign,
   verify,
   type CustomQRDateURLFormatter
@@ -17,41 +18,47 @@ import {
 export * from './lib.js';
 
 /**
- * QR Date object
+ * Dynamic QR Date object
  */
-export type QRDate = {
+export type DynamicQRDate = {
   timestamp: number;
-  salt: string;
   url: string;
   signature: string;
   publicKey: string;
 };
 
 /**
- * Create a QR Date object with the current time.
+ * Static QR Date object
+ */
+export type StaticQRDate = {
+  timestamp: number;
+  url: string;
+  signature: string;
+  fingerprint: string;
+};
+
+/**
+ * Create a DYNAMIC QR Date object with the current time.
  * The URL can be formatted using the `formatter` function, which has a signature of `CustomQRDateURLFormatter`.
  * You need to provide either the urlBase or formatter function. If you provide a formatter, urlBase is ignored.
- * For more info, see https://github.com/qrdate/qrdate/tree/main#createqrdate.
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#createdynamicqrdate.
  * @param {Object} obj
  * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
  * @param {KeyLike} obj.privateKey Private key to use
  * @param {CustomQRDateURLFormatter} obj.[formatter] Custom URL formatter function
- * @param {number} obj.[entropyLength] Amount of entropy to use as salt, default 32 bytes
- * @returns {QRDate} QR Date object
+ * @returns {DynamicQRDate} Dynamic QR Date object
  */
-export function createQRDate({
-  urlBase,
+export function createDynamicQRDate({
   privateKey,
+  urlBase,
   formatter,
-  entropyLength
 }: {
-  urlBase?: string;
   privateKey: KeyLike;
+  urlBase?: string;
   formatter?: CustomQRDateURLFormatter;
-  entropyLength?: number;
-}): QRDate {
-  if (!urlBase && !formatter) throw 'urlBase or formatter is required';
+}): DynamicQRDate {
   if (!privateKey) throw 'privateKey is required';
+  if (!urlBase && !formatter) throw 'urlBase or formatter is required';
   
   // If there's no public key passed, derive one from the private key
   const publicKey = createPublicKey(privateKey).export({ format: 'der', type: 'spki' }).toString('base64url');
@@ -59,25 +66,19 @@ export function createQRDate({
   // Generate a timestamp
   const timestamp = new Date().getTime();
 
-  // Get some random entropy
-  const salt = generateSalt(entropyLength);
-
-  // Sign the timestamp + salt
-  const signature = sign(formatClearTextSignature(timestamp, salt), privateKey);
+  // Sign the timestamp
+  const signature = sign(timestamp, privateKey);
 
   // Create the QR code url
-  const url = createQRDateURL({
+  const url = createDynamicQRDateURL({
     urlBase,
     timestamp,
     signature,
-    salt,
     formatter,
-    publicKey,
   });
 
   return {
     timestamp,
-    salt,
     url,
     signature,
     publicKey,
@@ -85,45 +86,132 @@ export function createQRDate({
 }
 
 /**
+ * Create a STATIC QR Date object with the current time.
+ * The URL can be formatted using the `formatter` function, which has a signature of `CustomQRDateURLFormatter`.
+ * You need to provide either the urlBase or formatter function. If you provide a formatter, urlBase is ignored.
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#createqrdate.
+ * @param {Object} obj
+ * @param {string} [obj.urlBase] URL base to use (https://host/folder - no trailing slash)
+ * @param {KeyLike} obj.privateKey Private key to use
+ * @returns {StaticQRDate} QR Date object
+ */
+export function createStaticQRDate({
+  privateKey,
+}: {
+  privateKey: KeyLike;
+}): StaticQRDate {
+  if (!privateKey) throw 'privateKey is required';
+  
+  // If there's no public key passed, derive one from the private key
+  const publicKey = createPublicKey(privateKey);
+
+  // Generate a timestamp
+  const timestamp = new Date().getTime();
+
+  // Sign the timestamp
+  const signature = sign(timestamp, privateKey);
+
+  const fingerprint = createFingerprint(publicKey);
+
+  // Create the QR code url
+  const url = createStaticQRDateURL({
+    timestamp,
+    signature,
+    fingerprint,
+  });
+
+  return {
+    timestamp,
+    url,
+    signature,
+    fingerprint
+  }
+}
+
+function formatPrivateKey(privateKey: KeyLike) {
+  // If we're being passed base64url format keys, try to turn them into PEM keys
+  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
+  }
+  return privateKey;
+}
+
+function formatPublicKey(publicKey: KeyLike) {
+  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
+    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
+  }
+  return publicKey;
+}
+
+/**
  * Verify that the signature on a signed QR Date string is valid.
- * For more info, see https://github.com/qrdate/qrdate/tree/main#verifyqrdate.
+ * For more info, see https://github.com/qrdate/qrdate/tree/main#verifydynamicqrdate.
  * @param {Object} obj
  * @param {number} obj.timestamp Timestamp
- * @param {string} obj.salt Salt value
  * @param {string} obj.signature Signature
  * @param {KeyLike} [obj.privateKey] Private key to use - OR
  * @param {KeyLike} [obj.publicKey] Public key to use
  * @returns {boolean} True if valid
  */
-export function verifyQRDate({
+export function verifyDynamicQRDate({
   timestamp,
-  salt,
   signature,
   privateKey,
   publicKey,
 }:{
   timestamp: number;
-  salt: string;
   signature: string;
   privateKey?: KeyLike;
   publicKey?: KeyLike;
 }): boolean {
   if(!timestamp) throw 'timestamp is required';
-  if(!salt) throw 'salt is required';
+  if(!signature) throw 'signature is required';
   if(!publicKey && !privateKey) throw 'privateKey or publicKey is required';
 
-  // If we're being passed base64url format keys, try to turn them into PEM keys
-  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
-  }
-
-  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
-    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
-  }
+  privateKey = formatPrivateKey(privateKey);
+  publicKey = formatPublicKey(publicKey);
 
   // If there's a private key passed, derive a public key first if one doesn't exist
   if (!publicKey && privateKey) publicKey = createPublicKey(privateKey);
-  return verify(formatClearTextSignature(timestamp, salt), publicKey, signature);
+  return verify(timestamp, publicKey, signature);
+}
+
+/**
+ * Verify that the signature on a static signed QR Date string is valid based on its fingerprint.
+ * @param {Object} obj
+ * @param {number} obj.timestamp Timestamp
+ * @param {string} obj.signature Signature
+ * @param {string} obj.fingerprint Public key fingerprint
+ * @param {KeyLike} [obj.publicKey] Public key to use
+ * @returns {boolean} True if valid
+ */
+export function verifyStaticQRDate({
+  timestamp,
+  signature,
+  fingerprint,
+  publicKey,
+}:{
+  timestamp: number;
+  signature: string;
+  fingerprint: string;
+  privateKey?: KeyLike;
+  publicKey?: KeyLike;
+}): boolean {
+  if(!timestamp) throw 'timestamp is required';
+  if(!signature) throw 'signature is required';
+  if(!fingerprint) throw 'fingerprint is required';
+  if(!publicKey) throw 'publicKey is required';
+
+  publicKey = formatPublicKey(publicKey);
+
+  // If there's a private key passed, derive a public key first if one doesn't exist
+  const verifyFingerprint = createFingerprint(publicKey);
+
+  console.log('verifyFingerprint', verifyFingerprint)
+  console.log(fingerprint);
+
+  if(verifyFingerprint !== fingerprint) return false;
+  return verify(timestamp, publicKey, signature);
 }
 
 /**

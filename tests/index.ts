@@ -1,62 +1,83 @@
 import * as assert from 'uvu/assert';
 
-import { createQRDate, verifyQRDate } from '../src/index.js';
+import { createDynamicQRDate, createStaticQRDate, verifyDynamicQRDate, verifyStaticQRDate } from '../src/index.js';
 
 import { createPublicKey } from 'node:crypto';
 import { generateSalt } from '../src/lib.js';
 import { test } from 'uvu';
 
 const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
-MC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw
+MC4CAQAwBQYDK2VwBCIEICD8k5Poo6PsLJ6PLN7HDzVnwkMZu5bmnkYDRhkF7iq0
 -----END PRIVATE KEY-----`;
+const TEST_PUBLIC_KEY = ` -----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEATV2v3k6Z/BIpLbIEeBpc+IzgbKtDK7QVEoMMA8NgStg=
+-----END PUBLIC KEY-----`;
+const TEST_TIMESTAMP = 1646141569644;
+const TEST_SIGNATURE = 'xnNQ8mAM-xAlWGU4DjFAIB6Yy7oi2BDh37m6SYLiiJ0q73ObjYa05P3XwMgiGnXq2NYM641neVMu5BTxUFdABw';
 
-const TEST_URL_BASE = 'https://localhost'
-const TEST_TIMESTAMP = 1646109781467;
-const TEST_SALT = 'bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
-const TEST_STRING_TO_SIGN = '1646109781467bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
-const TEST_SIGNATURE = 'x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA';
-
-test('[createQRDate] creates a QR Date', () => {
-  const qrDate = createQRDate({
+test('[createDynamicQRDate] creates a dynamic QR Date', () => {
+  const qrDate = createDynamicQRDate({
     urlBase: 'https://localhost',
     privateKey: TEST_PRIVATE_KEY,
   });
 
   assert.type(qrDate.publicKey, 'string');
-  assert.type(qrDate.salt, 'string');
   assert.type(qrDate.signature, 'string');
   assert.type(qrDate.timestamp, 'number');
   assert.type(qrDate.url, 'string');
 
-  assert.is(qrDate.salt.length, 43);
   assert.is(qrDate.url.startsWith('https://localhost'), true);
 
   const url = new URL(qrDate.url);
 
   assert.is(url.searchParams.get('s'), qrDate.signature);
   assert.is(url.searchParams.get('t'), qrDate.timestamp.toString());
-  assert.is(url.searchParams.get('e'), qrDate.salt);
 });
 
-test('[createQRDate] throws when you do not define urlBase AND formatter, or private key', () => {
-
-  assert.throws(() => { createQRDate({
+test('[createDynamicQRDate] throws when you do not define urlBase AND formatter, or private key', () => {
+  assert.throws(() => { createDynamicQRDate({
     urlBase: 'https://localhost',
   } as any)});
 
-  assert.throws(() => { createQRDate({} as any)});
+  assert.throws(() => { createDynamicQRDate({} as any)});
 
-  assert.throws(() => { createQRDate({
+  assert.throws(() => { createDynamicQRDate({
     privateKey: TEST_PRIVATE_KEY
   } as any)});
+});
+
+test('[createStaticQRDate] creates a static QR Date', () => {
+  const qrDate = createStaticQRDate({
+    privateKey: TEST_PRIVATE_KEY,
+  });
+
+  assert.type(qrDate.signature, 'string');
+  assert.type(qrDate.timestamp, 'number');
+  assert.type(qrDate.url, 'string');
+
+  assert.is(qrDate.url.startsWith('qrdate://v?'), true);
+
+  const url = new URL(qrDate.url);
+
+  assert.is(url.searchParams.get('s'), qrDate.signature);
+  assert.is(url.searchParams.get('t'), qrDate.timestamp.toString());
+  assert.is(url.searchParams.get('f'), qrDate.fingerprint);
+});
+
+test('[createStaticQRDate] throws when you do not define private key or when private key is mangled', () => {
+
+  assert.throws(() => { createStaticQRDate({} as any)});
+
+  assert.throws(() => { createStaticQRDate({
+    privateKey: '23 skidoo'
+  })});
 
 });
 
-test('[verifyQRDate] returns true on a valid QR Date', () => {
-  const valid = verifyQRDate({
+test('[verifyDynamicQRDate] returns true on a valid QR Date', () => {
+  const valid = verifyDynamicQRDate({
     signature: TEST_SIGNATURE, 
     timestamp: TEST_TIMESTAMP,
-    salt: TEST_SALT,
     privateKey: TEST_PRIVATE_KEY,
   });
 
@@ -64,11 +85,10 @@ test('[verifyQRDate] returns true on a valid QR Date', () => {
   assert.ok(valid);
 });
 
-test('[verifyQRDate] returns false on an invalid QR Date', () => {
-  const valid = verifyQRDate({
+test('[verifyDynamicQRDate] returns false on an invalid QR Date', () => {
+  const valid = verifyDynamicQRDate({
     signature: TEST_SIGNATURE+'foo', 
     timestamp: TEST_TIMESTAMP+123,
-    salt: TEST_SALT+'foo',
     privateKey: TEST_PRIVATE_KEY,
   });
 
@@ -76,30 +96,23 @@ test('[verifyQRDate] returns false on an invalid QR Date', () => {
   assert.not.ok(valid);
 });
 
-test('[verifyQRDate] throws when you do not define signature, timestamp, salt or either private or public key', () => {
+test('[verifyDynamicQRDate] throws when you do not define signature, timestamp or either private or public key', () => {
 
-  assert.throws(() => { verifyQRDate({
-    timestamp: TEST_TIMESTAMP,
-    salt: TEST_SALT,
-    privateKey: TEST_PRIVATE_KEY,
-  } as any)});
+  assert.throws(() => { verifyDynamicQRDate({} as any)});
 
-  assert.throws(() => { verifyQRDate({
-    signature: TEST_SIGNATURE, 
-    salt: TEST_SALT,
-    privateKey: TEST_PRIVATE_KEY,
-  } as any)});
-
-  assert.throws(() => { verifyQRDate({
-    signature: TEST_SIGNATURE, 
+  assert.throws(() => { verifyDynamicQRDate({
     timestamp: TEST_TIMESTAMP,
     privateKey: TEST_PRIVATE_KEY,
   } as any)});
 
-  assert.throws(() => { verifyQRDate({
+  assert.throws(() => { verifyDynamicQRDate({
+    signature: TEST_SIGNATURE, 
+    privateKey: TEST_PRIVATE_KEY,
+  } as any)});
+
+  assert.throws(() => { verifyDynamicQRDate({
     signature: TEST_SIGNATURE+'foo', 
     timestamp: TEST_TIMESTAMP+123,
-    salt: TEST_SALT+'foo',
   })})
 
 });

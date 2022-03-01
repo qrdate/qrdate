@@ -41,7 +41,9 @@ You can find the exact spec for both below the usage.
 
 ## Using this library
 
-**This library does NOT generate the QR code graphic for you**. Feed the output of `createQRDate().url` to one to get your image.
+**This library does NOT generate the QR code image for you!** It only helps you conform to the QR Date spec. You need to feed the output of the date creation function (specifically, the `url` value) into a QR code image generator to get the correct output image.
+
+**This is an ES module written in TypeScript.** CommonJS is *not* supported. The minimum NodeJS version is 14.19.0.
 
 ### Installation
 
@@ -49,51 +51,115 @@ You can find the exact spec for both below the usage.
 npm i --save qrdate
 ```
 
-### `createQRDate`
+## API
 
-Create a QR Date spec object. Pass the generated `url` property that you get back to a QR code generator and display to user.
+### `createDynamicQRDate( params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
+
+Create a Dynamic QR Date spec object with web-based verification. Use this function to create QR Date that users can verify on your website. The client flow is:
+
+1. User requests your website.
+2. Your server calls `createDynamicQRDate`, returning the results to the client.
+3. Draw the QR code on the client from the `url` property on the return object.
+
+#### Input object
+
+You need to specify two of these when calling `createDynamicQRDate()`
+
+Attribute    | Type                     | Required                      | Explanation
+-------------|--------------------------|-------------------------------|--------------------
+`params.urlBase`    | string                   | Either `params.urlBase` or `params.formatter` are required. If `params.formatter` is defined, `params.urlBase` is not used.  | Your verification base URL - do NOT change this once you have decided on it without some kind of redirection in place! All your QR codes will start with the base URL.
+`params.formatter`  | CustomQRDateURLFormatter | See above | A formatter
+`params.privateKey` | KeyLike (`string / Buffer / KeyObject`) | Yes | Your ed25519 private key
+
+#### Output object
+
+All the return values are designed to be safe to be shown to the client:
+
+Attribute    | Type                     | Explanation
+-------------|--------------------------|---------------------
+`timestamp`  | number                   | UNIX timestamp
+`url`        | string                   | The text to render into a QR code.
+`signature`  | string                   | Base64url-encoded signed timestamp
+`publicKey`  | string                   | Base64url-encoded Ed25519 signature public key used to verify `signature`
 
 #### Example
 
 ```ts
-import { createQRDate } from 'qrdate';
+import { createDynamicQRDate } from 'qrdate';
 
-//
-// Generating a V1 Dynamic URL:
-//
+const urlBase = 'https://localhost/v';
+const privateKey = `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`;
 
-const qrDateDynamic = createQRDate({
-  baseUrl: 'https://localhost/v', // Your verification base URL - do NOT change this once you have decided on it! All your QR codes will contain this value.
-  privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
+const qrDateDynamic = createDynamicQRDate({
+  urlBase,
+  privateKey, // or a Buffer or KeyObject
 });
 
 console.log(qrDateDynamic);
 // -----------^
 // {
 //   timestamp: 1646109781467,
-//   salt: "bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
-//   url: "https://localhost/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
+//   url: "https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467",
 //   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
 //   publicKey: "MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg"
 // }
 
-//
-// Generating a V1 Static URL:
-// 
+```
 
-const qrDateStatic = createQRDate({
-  baseUrl: 'qrdate://', // There are no endpoints, so just type in qrdate://
-  privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
+### `createStaticQRDate( params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
+
+Create a Static QR Date spec object with offline verification. Use this function to create QR Date that users can verify *without* your website. The client flow is:
+
+For users wanting to display codes:
+
+1. User requests your website.
+2. Your server calls `createStaticQRDate`, returning the results to the client.
+3. Draw the QR code on the client from the `url` property on the return object.
+
+For users wanting to verify the codes:
+
+1. You publish your public key either in a public or private place, depending on what sort of a setup you wish.
+2. The user inserts your public key into their key store, with the store creating a SHA256 hash of it as the fingerprint.
+3. The user can then verify the signature by comparing the hashed public key ID in their key store to the fingerprint in the QR Date. If they match, the signature was verifiably written using your public key.
+
+#### Input object
+
+You need to specify two of these when calling `createDynamicQRDate()`
+
+Attribute    | Type                     | Required                      | Explanation
+-------------|--------------------------|-------------------------------|--------------------
+`params.privateKey` | KeyLike (`string / Buffer / KeyObject`) | Yes | Your ed25519 private key
+
+#### Output object
+
+All the return values are designed to be safe to be shown to the client:
+
+Attribute     | Type                     | Explanation
+--------------|--------------------------|---------------------
+`timestamp`   | number                   | UNIX timestamp
+`url`         | string                   | The text to render into a QR code.
+`signature`   | string                   | Base64url-encoded signed timestamp
+`fingerprint` | string                   | Base64url-encoded fingerprint hashed from your public key
+
+#### Example
+
+
+```ts
+import { createStaticQRDate } from 'qrdate';
+
+const privateKey = `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`;
+
+const qrDateStatic = createStaticQRDate({
+  privateKey // or a Buffer or KeyObject
 });
 
 console.log(qrDateStatic);
 // -----------^
 // {
-//   timestamp: 1646109781467,
-//   salt: "bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
-//   url: "qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg",
-//   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
-//   publicKey: "MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg"
+//   timestamp: 1646142017145,
+//   url: 'qrdate://v?s=tyYD957Q3i6TGUJi7-xzypIl4Be6mM8Jqvc2-nAswRuTadlCEELtMnXWqykcpzneuXJa772vNXc3T0pQFcPBBw&t=1646142017145&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE',
+//   signature: 'tyYD957Q3i6TGUJi7-xzypIl4Be6mM8Jqvc2-nAswRuTadlCEELtMnXWqykcpzneuXJa772vNXc3T0pQFcPBBw',
+//   fingerprint: 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE'
 // }
 //
 // In the above url, `v` has been added after qrdate:// automatically.
@@ -103,28 +169,26 @@ console.log(qrDateStatic);
 //
 ```
 
-### `verifyQRDate`
+### `verifyDynamicQRDate`
 
 Verify that the signature on a signed QR Date string is valid.
 
 #### Example
 
 ```ts
-import { verifyQRDate } from 'qrdate';
+import { verifyDynamicQRDate } from 'qrdate';
 
-const valid = verifyQRDate({
+const valid = verifyDynamicQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
   timestamp: 1646109781467,
-  salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
   privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
 });
 
 // OR
 
-const valid = verifyQRDate({
+const valid = verifyDynamicQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
   timestamp: 1646109781467,
-  salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
   publicKey: `-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb/9A1zyllxaU6cjg=\n-----END PUBLIC KEY-----`; // or a Buffer or KeyObject
 });
 
@@ -147,14 +211,17 @@ console.log(privateKey); // -----BEGIN PRIVATE KEY----- ... -----END PRIVATE KEY
 console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY-----
 ```
 
-
-## QR Date v1 Dynamic spec
+## Dynamic QR Date v1 spec
 
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
 
 ```
 https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
 ```
+
+### Important security considerations
+
+**DO NOT LEAK PRIVATE INFORMATION BY STORING ANY SORT OF STATE IN THE URL. DO NOT STORE IP ADDRESSES OF PEOPLE WHO REQUEST DATES.** It is imperative that you stick to the spec. Do not create any sort of unintended tracking mechanisms by adding your own parameters or state.
 
 ### Required query parameters
 
@@ -164,19 +231,22 @@ Parameter | Explanation
 ----------|--------------
 `t`       | Timestamp (UNIX)
 `s`       | Signature (ed25519)
-`e`       | Random salt (32 bytes by default) - `e` for entropy
 
 ### Format the beginning of the URL
 
 **Do not point to qrdate.org in your implementation**, as we do not host your private key! `https://qrdate.org/v` is only a placeholder for your domain and hosting setup.
 
-## QR Date v1 Static spec
+## Static QR Date v1 spec
 
 Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the base `qrdate://` and you will a URL in the correct format:
 
 ```
 qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
 ```
+
+### Don't add your own parameters in this one either!
+
+Sticking to the spec means you're only doing the bare necessary thing- signing a timestamp, and not leaking someone's private information by mistake.
 
 ### Required origin and pathname
 
@@ -188,10 +258,9 @@ Parameter | Explanation
 ----------|--------------
 `t`       | Timestamp (UNIX)
 `s`       | Signature
-`e`       | Random salt (32 bytes by default) - `e` for entropy
-`p`       | Public key fingerprint to use (SHA256)
+`f`       | Public key fingerprint (SHA256) - **NOT** the public key
 
-This type of URL can be parsed without external parties as it contains both the signature and public key fingerprint. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible. For automatic validation, the consuming client must implement some sort of a key store.
+This type of URL can be parsed without external parties as it contains both the signature and public key **fingerprint** (not the public key itself), which can be compared against a key store that you need to implement in a client application consuming these URLs. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible, without needing further web-based validation as long as the user has added the public key (that you must publish elsewhere) into their trusted list. For automatic validation, the consuming client must then implement some sort of a key store, which is outside the scope of this package.
 
 ## Contact
 

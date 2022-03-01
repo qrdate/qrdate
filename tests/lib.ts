@@ -1,111 +1,113 @@
 import * as assert from 'uvu/assert';
 
-import { createQRDateURL, formatClearTextSignature, generateSalt, sign, verify, type QRDateURLParameters } from '../src/lib.js';
+import {
+  createDynamicQRDateURL,
+  createFingerprint,
+  createStaticQRDateURL,
+  sign,
+  verify,
+  type DynamicQRDateURLParams,
+  type StaticQRDateURLParams
+} from '../src/lib.js';
 
 import { createPublicKey } from 'node:crypto';
 import { test } from 'uvu';
 
 const TEST_PRIVATE_KEY = `-----BEGIN PRIVATE KEY-----
-MC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw
+MC4CAQAwBQYDK2VwBCIEICD8k5Poo6PsLJ6PLN7HDzVnwkMZu5bmnkYDRhkF7iq0
 -----END PRIVATE KEY-----`;
+const TEST_PUBLIC_KEY = ` -----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEATV2v3k6Z/BIpLbIEeBpc+IzgbKtDK7QVEoMMA8NgStg=
+-----END PUBLIC KEY-----`;
+const TEST_URL_BASE = 'https://localhost.com/v'
+const TEST_TIMESTAMP = 1646141569644;
+const TEST_SIGNATURE = 'xnNQ8mAM-xAlWGU4DjFAIB6Yy7oi2BDh37m6SYLiiJ0q73ObjYa05P3XwMgiGnXq2NYM641neVMu5BTxUFdABw';
 
-const TEST_URL_BASE = 'https://localhost/v'
-const TEST_TIMESTAMP = 1646109781467;
-const TEST_SALT = 'bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
-const TEST_STRING_TO_SIGN = '1646109781467bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI';
-const TEST_SIGNATURE = 'x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA';
-
-test('[generateSalt] generates a suitable salt', () => {
-  const salt = generateSalt();
-  assert.ok(salt);
-  assert.type(salt, 'string');
-  assert.is(salt.length, TEST_SALT.length);
+test('[createFingerprint] creates a valid fingerprint from a public key', () => {
+  const publicKey = createPublicKey(TEST_PRIVATE_KEY);
+  const fingerprint = createFingerprint(publicKey);
+  assert.ok(fingerprint);
+  assert.type(fingerprint, 'string');
+  assert.is(fingerprint, 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE');
 });
 
-test('[formatClearTextSignature] formats a suitable string for signing', () => {
-  const stringToSign = formatClearTextSignature(TEST_TIMESTAMP, TEST_SALT);
-  assert.ok(stringToSign);
-  assert.type(stringToSign, 'string');
-  assert.is(stringToSign, TEST_STRING_TO_SIGN);
+test('[createFingerprint] throws if private key is mangled', () => {
+  assert.throws((() => {
+    const publicKey = createPublicKey('23 skidoo');
+    const fingerprint = createFingerprint(publicKey);
+  }));
 });
 
-test('[sign] signs a string with timestamp and salt', () => {
-  const signedString = sign(TEST_STRING_TO_SIGN, TEST_PRIVATE_KEY);
+test('[sign] signs a string with timestamp', () => {
+  const signedString = sign(TEST_TIMESTAMP, TEST_PRIVATE_KEY);
   assert.type(signedString, 'string');
   assert.is(signedString, TEST_SIGNATURE);
 });
 
 test('[verify] returns true on a properly signed string', () => {
   const publicKey = createPublicKey(TEST_PRIVATE_KEY);
-  const valid = verify(TEST_STRING_TO_SIGN, publicKey, TEST_SIGNATURE);
+  const valid = verify(TEST_TIMESTAMP, publicKey, TEST_SIGNATURE);
   assert.type(valid, 'boolean');
   assert.ok(valid);
 });
 
 test('[verify] returns false on a mismatch', () => {
   const publicKey = createPublicKey(TEST_PRIVATE_KEY);
-  const valid = verify(TEST_STRING_TO_SIGN+'foo', publicKey, TEST_SIGNATURE);
+  const valid = verify(TEST_TIMESTAMP+'foo', publicKey, TEST_SIGNATURE);
   assert.type(valid, 'boolean');
   assert.not.ok(valid);
 });
 
-test('[createQRDateURL] creates a valid url', () => {
-  const url = new URL(createQRDateURL({
+test('[createDynamicQRDateURL] creates a valid url', () => {
+  const url = new URL(createDynamicQRDateURL({
     urlBase: TEST_URL_BASE,
     timestamp: TEST_TIMESTAMP,
     signature: TEST_SIGNATURE,
-    salt: TEST_SALT
   }));
 
   assert.is(url.origin, TEST_URL_BASE.split('/v')[0]);
   assert.is(url.pathname, '/v');
   assert.is(url.searchParams.get('s'), TEST_SIGNATURE);
   assert.is(url.searchParams.get('t'), TEST_TIMESTAMP.toString());
-  assert.is(url.searchParams.get('e'), TEST_SALT);
 });
 
 function CustomFormatter({
   urlBase,
   timestamp,
   signature,
-  salt
-}: QRDateURLParameters) {
-  return `https://foo.bar/verify?s=${signature}&t=${timestamp}&e=${salt}`;
+}: DynamicQRDateURLParams) {
+  return `https://foo.bar/verify?s=${signature}&t=${timestamp}`;
 }
 
-test('[createQRDateURL] creates a valid url with a custom formatter', () => {
-  const url = new URL(createQRDateURL({
+test('[createDynamicQRDateURL] creates a valid url with a custom formatter', () => {
+  const url = new URL(createDynamicQRDateURL({
     formatter: CustomFormatter,
     urlBase: TEST_URL_BASE,
     timestamp: TEST_TIMESTAMP,
     signature: TEST_SIGNATURE,
-    salt: TEST_SALT
   }));
 
   assert.is(url.host, 'foo.bar');
   assert.is(url.pathname, '/verify');
   assert.is(url.searchParams.get('s'), TEST_SIGNATURE);
   assert.is(url.searchParams.get('t'), TEST_TIMESTAMP.toString());
-  assert.is(url.searchParams.get('e'), TEST_SALT);
 });
 
-test('[createQRDateURL] creates a valid qrdate:// URL', () => {
-  const publicKey = createPublicKey(TEST_PRIVATE_KEY).export({ format: 'der', type: 'spki' }).toString('base64url');
+test('[createStaticQRDateURL] creates a valid qrdate:// URL', () => {
+  const publicKey = createPublicKey(TEST_PRIVATE_KEY);
+  const fingerprint = createFingerprint(publicKey);
   
-  const url = new URL(createQRDateURL({
-    urlBase: 'qrdate://',
-    publicKey,
+  const url = new URL(createStaticQRDateURL({
+    fingerprint,
     timestamp: TEST_TIMESTAMP,
     signature: TEST_SIGNATURE,
-    salt: TEST_SALT
   }));
 
   assert.is(url.protocol, 'qrdate:');
   assert.is(url.host, 'v');
   assert.is(url.searchParams.get('s'), TEST_SIGNATURE);
   assert.is(url.searchParams.get('t'), TEST_TIMESTAMP.toString());
-  assert.is(url.searchParams.get('e'), TEST_SALT);
-  assert.is(url.searchParams.get('p'), publicKey);
+  assert.is(url.searchParams.get('f'), fingerprint);
 });
 
 test.run();
