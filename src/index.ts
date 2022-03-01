@@ -1,5 +1,6 @@
 import {
   createHash,
+  createPrivateKey,
   createPublicKey,
   generateKeyPairSync,
   randomBytes,
@@ -75,6 +76,7 @@ export function createDynamicQRDate({
   if (!urlBase && !formatter) throw 'urlBase or formatter is required';
 
   privateKey = formatPrivateKey(privateKey);
+  if(typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
   
   // Generate a timestamp
   const timestamp = new Date().getTime();
@@ -107,6 +109,7 @@ export function createStaticQRDate(privateKey: KeyLike): StaticQRDate {
   if (!privateKey) throw 'privateKey is required';
 
   privateKey = formatPrivateKey(privateKey);
+  if(typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
 
   // If there's no public key passed, derive one from the private key
   const publicKey = createPublicKey(privateKey);
@@ -149,12 +152,13 @@ export function verifyDynamicQRDate({
 }:{
   timestamp: string|number;
   signature: string;
-  publicKey?: KeyLike;
+  publicKey: KeyLike;
 }): boolean {
   if(!timestamp) throw 'timestamp is required';
   if(!signature) throw 'signature is required';
   if(!publicKey) throw 'publicKey is required';
   publicKey = formatPublicKey(publicKey);
+  if(typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
   return verify(timestamp, publicKey, signature);
 }
 
@@ -176,7 +180,7 @@ export function verifyStaticQRDate({
   timestamp: string|number;
   signature: string;
   fingerprint: string;
-  publicKey?: KeyLike;
+  publicKey: KeyLike;
 }): boolean {
   if(!timestamp) throw 'timestamp is required';
   if(!signature) throw 'signature is required';
@@ -184,6 +188,7 @@ export function verifyStaticQRDate({
   if(!publicKey) throw 'publicKey is required';
 
   publicKey = formatPublicKey(publicKey);
+  if(typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
 
   // If there's a private key passed, derive a public key first if one doesn't exist
   const verifyFingerprint = createFingerprint(publicKey);

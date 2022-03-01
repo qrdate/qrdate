@@ -1,6 +1,6 @@
 {
   "name": "qrdate",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Trusted timestamp inside a QR code",
   "type": "module",
   "exports": {
