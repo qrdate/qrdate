@@ -235,7 +235,7 @@ console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY---
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
 
 ```
-https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
+https://qrdate.org/v?s=twBgNlHANnq5BX1IJb6qAWyfeQkARwIFGiOysZAAIcyba08piw30358RiK9GmCbl3LfloNxoUfsdt6eeKJkyDQ&t=1646148299484
 ```
 
 ### Important security considerations
@@ -260,7 +260,7 @@ Parameter | Explanation
 Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the base `qrdate://` and you will a URL in the correct format:
 
 ```
-qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
+qrdate://v?s=d4pOIiiOpOv5q0FPaPUYgZDJERwpZ5JKYOex3nOKLCgMWUL9t3VKCHAdRZJs4a6x5HVTeMaSfSyVi4hK3GhCDQ&t=1646148299487&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE
 ```
 
 ### Don't add your own parameters in this one either!
@@ -269,7 +269,7 @@ Sticking to the spec means you're only doing the bare necessary thing- signing a
 
 ### Required origin and pathname
 
-**All** v1 static URLs should start with `qrdate://v` and then immediately proceed to the query parameters. We recommend you do **not** add your own parameters or change the URL format in any way.
+**All** v1 static URLs should start with `qrdate://v` and then immediately proceed to the query parameters. Do **not** add your own parameters or change the URL format in any way. The order of the query parameters does not matter.
 
 ### Required query parameters
 
