@@ -55,7 +55,7 @@ Use to generate a pair of keys. You can use only the `privateKey` to interact wi
 
 ### `createQRDate`
 
-Create a QR Date spec object. Pass the generated `url` property to a QR code generator.
+Create a QR Date spec object. Pass the generated `url` property that you get back to a QR code generator.
 
 ```ts
 import { createQRDate, generateKeys } from 'qrdate';
@@ -128,7 +128,7 @@ console.log(valid);
 
 ## QR Date V1 Dynamic spec
 
-Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the QR code, so it can be shorter.
+Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
 
 ```
 https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
