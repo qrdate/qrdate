@@ -1,19 +1,15 @@
 # QR Date
 
-This is the reference TS implementation for QR Date, a signed date inside a QR code.
-
-We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification below to keep things universal.
-
-For more information, please see [qrdate.org](https://qrdate.org).
+This is the reference TS implementation for [QR Date](https://qrdate.org), a trusted timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads, and live streams.
 
 ### What is it for?
 
-QR Date is a specification for verifying the date in (near-) real-time photojournalism and live streams via signing timestamps and encoding them in a QR code. It can be used to verify the date in rapidly disseminated information where a large amount of people will be able to see and verify the code within a reasonable time from publishing, which is measured in minutes or hours today. It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up. It does not work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard against the *future*.
+QR Date is a specification for verifying the date a photo or video was taken by having a trusted third party sign timestamps and encode them in a QR code visible in the frame. It can be used to verify the date in rapidly disseminated photo- or videography where a large amount of people will be able to see and verify the code shown within a reasonable time from publishing (which is measured in seconds to minutes today). It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up in a photo instead of writing the date on a piece of paper. It does not work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard media against the *future*.
 
 **The need to use something like QR Date arises, when..**
 
 1. You have a photograph or video you want to make and send to many people, rapidly.
-2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you made the photo or video.
+2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you took the photo or video.
 
 The traditional method is to write the current date on a piece of paper or, if one is available, hold up a newspaper from the day. Besides requiring materials, neither does not *definitely* verify that the event in the picture *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo, in a reasonably non-fakeable way*, it is then verifiable that you are **photographing the near-present**.
 
@@ -24,13 +20,15 @@ The physical act of using a QR Date involves either:
 1. Holding up a smartphone or tablet in view of the camera, displaying the QR Date from a website or broadcast TV (in case a TV station would be broadcasting it), or
 2. Holding up a printed version of the QR Date in a photo or video, replacing regular written text on paper.
 
-It is also possible to implement QR Dates as a middleman service for apps, which would then be acting as the trusted third party; for example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around on the screen (while being translucent), switch places, or other motion to make it harder to superimpose another code later.
+It is also possible to implement QR Dates as a middleman service for apps, which would then be acting as the trusted third party; for example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around in the frame, switch places, or other motion to make it harder to superimpose another code later.
 
 ### How does it work?
 
-The principle is very simple. A timestamp is generated on the server and attached to a bit of randomness. They are then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp, the bit of randomness, and the signature. The signature can also be verified using a separately published public key.
+The principle is very simple. A timestamp is generated on the server and attached to a bit of randomness. They are then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp, the bit of randomness, and the signature. The signature can also be verified using a separately published public key. Technical explanation follows.
 
-There are two types of QR Dates, Dynamic and Static.
+### Types of QR Dates
+
+There are two types; Dynamic and Static.
 
 - Dynamic is for when you're hosting a verification page
 - Static is for QR Dates that need to be verified without another connection to your site
@@ -170,6 +168,8 @@ Parameter | Explanation
 This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
 
 ## License
+
+We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification to keep things interoperable.
 
 ### THIS LIBRARY IS LICENSED UNDER:
 

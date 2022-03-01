@@ -14,7 +14,7 @@ import {
   type CustomQRDateURLFormatter
 } from './lib.js';
 
-export * from './lib';
+export * from './lib.js';
 
 /**
  * QR Date object
