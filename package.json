@@ -1,0 +1,27 @@
+{
+  "name": "qrdate",
+  "version": "1.0.0",
+  "description": "Signed date in a QR code",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    "./types": "./dist/index.d.ts",
+    "./package.json": "./package.json",
+    ".": "./dist/index.js"
+  },
+  "engines": {
+    "node": "^14.19.0 || >=16.0.0"
+  },
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "test": "tsm node_modules/uvu/bin.js tests",
+    "build": "tsc"
+  },
+  "author": "miunau",
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "tsm": "^2.2.1",
+    "typescript": "^4.5.5",
+    "uvu": "^0.5.3"
+  }
+}

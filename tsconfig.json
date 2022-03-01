@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"moduleResolution": "node",
+		"module": "es2015",
+		"lib": ["es2020"],
+		"target": "es2015",
+		"importsNotUsedAsValues": "error",
+		"preserveValueImports": true,
+		"isolatedModules": true,
+		"resolveJsonModule": true,
+		"sourceMap": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "."
+	},
+  "exclude": ["node_modules/"],
+	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "tests"]
+}
