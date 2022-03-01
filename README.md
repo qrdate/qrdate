@@ -41,6 +41,8 @@ You can find the exact spec for both below the usage.
 
 ## Using this library
 
+**This library does NOT generate the QR code graphic for you**. Feed the output of `createQRDate().url` to one to get your image.
+
 ### Installation
 
 ```sh
@@ -187,9 +189,9 @@ Parameter | Explanation
 `t`       | Timestamp (UNIX)
 `s`       | Signature
 `e`       | Random salt (32 bytes by default) - `e` for entropy
-`p`       | Public key to use
+`p`       | Public key fingerprint to use (SHA256)
 
-This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
+This type of URL can be parsed without external parties as it contains both the signature and public key fingerprint. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible. For automatic validation, the consuming client must implement some sort of a key store.
 
 ## Contact
 
