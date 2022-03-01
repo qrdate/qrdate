@@ -1,6 +1,6 @@
-# QR Date v1
+# QR Date (QR Time)
 
-This is the reference TS implementation for the first version of [QR Date](https://qrdate.org), a trusted timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads and live streams.
+This is the reference implementation for the first version of [QR Date](https://qrdate.org), a trusted timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads and live streams.
 
 ### What is it for?
 
