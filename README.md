@@ -14,7 +14,9 @@ We welcome contributions and people adopting this idea into other languages and 
 
 For more information, please see [qrdate.org](https://qrdate.org).
 
-## QR Date spec: With web hosting
+## QR Date spec: Hosting a verification page
+
+Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the QR code, so it can be shorter.
 
 ```
 https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
@@ -29,9 +31,9 @@ Parameter | Type   | Explanation
 `s`       | string | Signature
 `e`       | string | Random salt (32 bytes by default) - `e` for entropy
 
-## QR Date spec: Without web hosting
+## QR Date spec: Not hosting a verification page (static)
 
-There is no parser for a `qrdate://` type URI yet, but this is the decided form as you need to include the public key:
+**You can use QR Date without hosting a verification page.** Use the URL base `qrdate://` and `createQRDate` will include the public key in the URL:
 
 ```
 qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
@@ -43,3 +45,63 @@ Parameter | Type   | Explanation
 `s`       | string | Signature
 `e`       | string | Random salt (32 bytes by default) - `e` for entropy
 `p`       | string | Public key to use
+
+This type of URL can be parsed by itself as it contains both the signature and public key.
+
+## Using this library
+
+### Installation
+
+```sh
+npm i --save qrdate
+```
+
+### `createQRDate`
+
+Use `createQRDate` to create a QR Date spec object. Pass the generated `url` property to a QR code generator.
+
+```ts
+import { createQRDate, generateKeys } from 'qrdate';
+
+const qrDate = createQRDate({
+  baseUrl: 'https://localhost',
+  privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
+});
+
+console.log(qrDate);
+// -----------^
+// {
+//   timestamp: 1646109781467,
+//   salt: "bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
+//   url: "https://localhost/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI",
+//   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
+//   publicKey: "MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg"
+// }
+```
+
+### `verifyQRDate`
+
+Use `verifyQRDate` to verify that the signature on a signed QR Date string is valid. Pass the generated `url` property to a QR code generator.
+
+```ts
+import { verifyQRDate, generateKeys } from 'qrdate';
+
+const qrDate = verifyQRDate({
+  signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
+  timestamp: 1646109781467,
+  salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
+  privateKey: `-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIDgQtOtTyj6rlKFp2+qwlrgzGeA2sxJz4agZKzsCFGKw\n-----END PRIVATE KEY-----`; // or a Buffer or KeyObject
+});
+
+// OR
+
+const qrDate = verifyQRDate({
+  signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
+  timestamp: 1646109781467,
+  salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
+  publicKey: `-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb/9A1zyllxaU6cjg=\n-----END PUBLIC KEY-----`; // or a Buffer or KeyObject
+});
+
+console.log(valid);
+// boolean ---^
+```

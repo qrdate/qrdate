@@ -55,10 +55,11 @@ export function verify(
 }
 
 /**
- * Type for the input parameters to create a QR Date.
+ * Type for the input parameters to create a QR Date URL.
  */
 export type QRDateURLParameters = {
   urlBase?: string;
+  publicKey?: KeyLike;
   timestamp: number;
   signature: string;
   salt: string;
@@ -67,17 +68,20 @@ export type QRDateURLParameters = {
 /**
  * Type for a custom QR Date URL formatter.
  * It is recommended that you stay within the spec of the QR Date URL to stay compatible with other implementations, so
- * return a GET query with the parameters `s` for signature), `t` for timestamp and `e` for salt (entropy). See the
- * default implementation below on line 96 for the exact format.
+ * return a GET query with the parameters `s` for signature), `t` for timestamp and `e` for salt (entropy), and `p` if
+ * the public key is supplied and urlBase starts with qrdate://.
+ * See the default implementation below for the exact format.
  */
 export type CustomQRDateURLFormatter = (params: QRDateURLParameters) => string;
 
 /**
  * Creates a QR Code URL
- * @param {string} urlBase URL base (no trailing slash- https://host/folder)
- * @param {number} timestamp Timestamp
- * @param {string} signature Signature
- * @param {string} salt Salt
+ * @param {object} obj
+ * @param {string} obj.urlBase URL base (no trailing slash- https://host/folder or qrdate://)
+ * @param {number} obj.timestamp Timestamp
+ * @param {string} obj.signature Signature
+ * @param {string} obj.salt Salt
+ * @param {string} [obj.publicKey] Optional public key if using the qrdate:// scheme- in base64url format
  * @param {CustomQRDateURLFormatter} formatter Custom URL formatter function
  * @returns {string} URL
  */
@@ -86,15 +90,20 @@ export function createQRDateURL({
   timestamp,
   signature,
   salt,
+  publicKey,
   formatter
 }: QRDateURLParameters & { formatter?: CustomQRDateURLFormatter; }): string {
   if (formatter) {
     return formatter({
       urlBase,
+      publicKey,
       timestamp,
       signature,
       salt
     });
+  }
+  if (urlBase.startsWith('qrdate://')) {
+    return `${urlBase}/v?s=${signature}&t=${timestamp}&e=${salt}?p=${publicKey}`;
   }
   return `${urlBase}/v?s=${signature}&t=${timestamp}&e=${salt}`;
 }

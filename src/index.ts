@@ -53,7 +53,7 @@ export function createQRDate({
   if (!privateKey) throw 'privateKey is required';
   
   // If there's no public key passed, derive one from the private key
-  const publicKey = createPublicKey(privateKey);
+  const publicKey = createPublicKey(privateKey).export({ format: 'der', type: 'spki' }).toString('base64url');
 
   // Generate a timestamp
   const timestamp = new Date().getTime();
@@ -71,6 +71,7 @@ export function createQRDate({
     signature,
     salt,
     formatter,
+    publicKey,
   });
 
   return {
@@ -78,7 +79,7 @@ export function createQRDate({
     salt,
     url,
     signature,
-    publicKey: publicKey.export({ format: 'der', type: 'spki' }).toString('base64url')
+    publicKey,
   }
 }
 
