@@ -2,55 +2,38 @@
 
 This is the reference TS implementation for QR Date, a signed date inside a QR code.
 
-We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the QR Date spec below. We recommend using ed25519 signature keys. There is a convenience function (`generateKeys`) exposed that you can use to generate your own.
-
-### What is it for?
-
-This is a concept for verifying the date in (near-) real-time reporting and live streams. It does not work against the past (taking pictures of the code and using them later) but can be used to verify the date in rapidly disseminated information where a large amount of people will be able to see and verify the code within a reasonable time from publishing (which is measured in minutes or hours today).
-
-### How does it work?
-
-A timestamp is generated on the server and attached to a bit of randomness. They are then signed using a private key to produce a verification signature. The QR code contains a URL with the timestamp, the bit of randomness, and the signature. The signature can also be verified using a separately published public key.
+We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification below to keep things universal.
 
 For more information, please see [qrdate.org](https://qrdate.org).
 
-## QR Date V1 Dynamic spec — for when you're hosting a verification page
+### What is it for?
 
-Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the QR code, so it can be shorter.
+QR Date is a specification for verifying the date in (near-) real-time photojournalism and live streams. It does not work against the past (taking snapshots of the produced codes and using them later) but can be used to verify the date in rapidly disseminated information where a large amount of people will be able to see and verify the code within a reasonable time from publishing, which is measured in minutes or hours today. It therefore aims to provide a kind of social proof of other people observing a clock, borrowed from a trusted third party, that you are holding up.
 
-```
-https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
-```
+The need to use something like this arises in this situation:
 
-### Required query parameters
+1. You have evidence you want to photograph and send to many people, rapidly.
+2. You need to verify that the subject you are photographing *happened or existed* at the moment you made the evidence.
 
-Parameter | Type   | Explanation
-----------|--------|-------------
-`t`       | number | Timestamp (UNIX)
-`s`       | string | Signature
-`e`       | string | Random salt (32 bytes by default) - `e` for entropy
+The traditional method is to write the current date on a piece of paper, or if one is available, hold up a newspaper from the day. Besides requiring materials, neither is **definitely** verifiable in the sense that the picture you are sending *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo*, it is then verifiable that you are photographing the *near-present*. When disseminated rapidly to hundreds or thousands of people, it can constitute **social proof** — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
 
-1. **The only necessary thing are the query parameters** so that they can be parsed in the same way everywhere.
-2. Format the beginning of the URL (https://qrdate.org/v) to suit your hosting setup. **Do not point to qrdate.org in your implementation**. We recommend keeping the URL base short to keep the QR code clearer.
+The physical act of using a QR Date involves either:
 
-## QR Date V1 Static spec — for when you're NOT hosting a verification page
+1. Holding up a smartphone or tablet in view of the camera, displaying the QR Date from a website or broadcast TV (in case a TV station would be broadcasting it), or
+2. Holding up a printed version of the QR Date in a photo or video, replacing regular written text on paper.
 
-**You can use QR Date without hosting a separate verification page.** Use the URL base `qrdate://` and `createQRDate` will include the public key in the URL:
+It is also possible to implement QR Dates as a middleman service for apps, which would then be acting as the trusted third party; for example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around on the screen (while being translucent), switch places, or other motion to make it harder to superimpose another code later.
 
-```
-qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
-```
+### How does it work?
 
-### Required query parameters
+The principle is very simple. A timestamp is generated on the server and attached to a bit of randomness. They are then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp, the bit of randomness, and the signature. The signature can also be verified using a separately published public key.
 
-Parameter | Type   | Explanation
-----------|--------|-------------
-`t`       | number | Timestamp (UNIX)
-`s`       | string | Signature
-`e`       | string | Random salt (32 bytes by default) - `e` for entropy
-`p`       | string | Public key to use
+There are two types of QR Dates, Dynamic and Static.
 
-This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
+- Dynamic is for when you're hosting a verification page
+- Static is for QR Dates that need to be verified without another connection to your site
+
+You can find the exact spec for both below the usage.
 
 ## Using this library
 
@@ -123,7 +106,7 @@ Verify that the signature on a signed QR Date string is valid.
 ```ts
 import { verifyQRDate, generateKeys } from 'qrdate';
 
-const qrDate = verifyQRDate({
+const valid = verifyQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
   timestamp: 1646109781467,
   salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
@@ -132,7 +115,7 @@ const qrDate = verifyQRDate({
 
 // OR
 
-const qrDate = verifyQRDate({
+const valid = verifyQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
   timestamp: 1646109781467,
   salt: bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI,
@@ -142,6 +125,47 @@ const qrDate = verifyQRDate({
 console.log(valid);
 // boolean ---^
 ```
+
+## QR Date V1 Dynamic spec
+
+Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the QR code, so it can be shorter.
+
+```
+https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI
+```
+
+### Required query parameters
+
+The query parameters are the contract for parsing the URL. You need to provide these for the URL to be considered a QR Date.
+
+Parameter | Explanation
+----------|--------------
+`t`       | Timestamp (UNIX)
+`s`       | Signature (ed25519)
+`e`       | Random salt (32 bytes by default) - `e` for entropy
+
+### Format the beginning of the URL
+
+**Do not point to qrdate.org in your implementation**, as we do not host your private key! `https://qrdate.org/v` is only a placeholder for your domain and hosting setup.
+
+## QR Date V1 Static spec
+
+Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the URL base `qrdate://` and you will a URI in the correct format:
+
+```
+qrdate://v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&e=bsCmuR7InOXGSns6vHYEzpJFvLhwqBYVu1g2-aVK-lI&p=MCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb_9A1zyllxaU6cjg
+```
+
+### Required query parameters
+
+Parameter | Explanation
+----------|--------------
+`t`       | Timestamp (UNIX)
+`s`       | Signature
+`e`       | Random salt (32 bytes by default) - `e` for entropy
+`p`       | Public key to use
+
+This type of URL can be parsed without external parties as it contains both the signature and public key. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible.
 
 ## License
 
