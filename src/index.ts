@@ -112,8 +112,17 @@ export function verifyQRDate({
   if(!salt) throw 'salt is required';
   if(!publicKey && !privateKey) throw 'privateKey or publicKey is required';
 
+  // If we're being passed base64url format keys, try to turn them into PEM keys
+  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
+  }
+
+  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
+    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
+  }
+
   // If there's a private key passed, derive a public key first if one doesn't exist
-  if(!publicKey && privateKey) publicKey = createPublicKey(privateKey);
+  if (!publicKey && privateKey) publicKey = createPublicKey(privateKey);
   return verify(formatClearTextSignature(timestamp, salt), publicKey, signature);
 }
 

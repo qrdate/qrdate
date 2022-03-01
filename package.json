@@ -1,6 +1,6 @@
 {
   "name": "qrdate",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "description": "Signed date in a QR code",
   "type": "module",
   "exports": {
@@ -17,7 +17,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "tsm node_modules/uvu/bin.js tests",
-    "build": "tsc"
+    "build": "rm -rf dist && tsc"
   },
   "author": "qrdate.org + contributors",
   "devDependencies": {
