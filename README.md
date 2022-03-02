@@ -235,6 +235,8 @@ console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY---
 
 # QR Date URL Specification
 
+This is the initial version of the specification. If you have any ideas or input, feel free to raise an issue.
+
 ## Dynamic QR Date v1 spec
 
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
