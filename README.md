@@ -7,13 +7,13 @@
 
 This is the reference implementation for the first version of [QR Date](https://qrdate.org), a signed timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads and live streams.
 
-### What is it for?
+## What is it for?
 
 QR Date is a specification for verifying the date a photo or video was taken by having a trusted third party sign timestamps and encode them in a QR code visible in the frame. It can be used to verify the date in rapidly disseminated photo- or videography where a large amount of people will be able to see and verify the code shown within a reasonable time from publishing, which is measured in seconds to minutes today.
 
 It provides a kind of social proof of other people observing a clock, given to you by a *trusted third party*, that you are holding up in a photo instead of writing the date on a piece of paper. It does *not* work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard media against the *future*. Therefore, unseen QR Dates are meant to have a lifespan after which they should be considered tainted.
 
-**The need to use something like QR Date arises, when..**
+## The need to use something like QR Date arises, when..
 
 1. You have a photograph or video you want to make and send to many people, rapidly.
 2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you took the photo or video.
@@ -22,7 +22,7 @@ The traditional method is to write the current date on a piece of paper or, if o
 
 When disseminated rapidly to hundreds or thousands of people, a QR Date displayed in a photo or video can constitute social proof — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
 
-The physical act of using a QR Date involves either:
+## The physical act of using a QR Date involves either:
 
 1. Holding up a smartphone or tablet in view of the camera, displaying the QR Date from a website or broadcast TV (in case a TV station would be broadcasting it), or
 2. Holding up a printed version of the QR Date in a photo or video, replacing regular written text on paper.
@@ -31,11 +31,11 @@ It is also possible to implement QR Dates as a middleman service for app backend
 
 For example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around in the frame, switch places, or other motion to make it harder to superimpose another code later.
 
-### How does it work?
+## How does it work?
 
 The principle is very simple. A timestamp is generated on the server, then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp and the signature. The signature can also be verified using a separately published public key.
 
-### Types of QR Dates
+## Types of QR Dates
 
 There are two types; Dynamic and Static.
 
@@ -44,7 +44,7 @@ There are two types; Dynamic and Static.
 
 You can find the exact spec for both below the usage.
 
-## Using this library
+# Using this library
 
 **This library does NOT generate the QR code image for you!** It only helps you conform to the QR Date spec. You need to feed the output of the date creation function (specifically, the `url` value) into a QR code image generator to get the correct output image.
 
@@ -299,10 +299,11 @@ This type of URL can be parsed without external parties as it contains both the 
 - miunau
 - Kris
 - Cendyne
+- ...and others preferring to stay anonymous
+
+Want to help out? We welcome contributions and people adopting this idea into other languages and environments. Please conform to the QR Date specification to keep things interoperable.
 
 ## License
-
-We welcome contributions and people adopting this idea into other languages and environments, but ask to conform to the license and QR Date specification to keep things interoperable.
 
 ### INTELLECTUAL PROPERTY
 
