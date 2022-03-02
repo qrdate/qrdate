@@ -56,9 +56,9 @@ You can find the exact spec for both below the usage.
 npm i --save qrdate
 ```
 
-## API
+# API
 
-### `createDynamicQRDate(params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
+## `createDynamicQRDate(params: { privateKey: KeyLike; urlBase?: string; formatter?: CustomQRDateURLFormatter; }): DynamicQRDate`
 
 Create a Dynamic QR Date spec object with web-based verification. Use this function to create QR Date that users can verify on your website. The client flow is:
 
@@ -66,9 +66,7 @@ Create a Dynamic QR Date spec object with web-based verification. Use this funct
 2. Your server calls `createDynamicQRDate`, returning the results to the client.
 3. Draw the QR code on the client from the `url` property on the return object.
 
-#### Input object
-
-You need to specify two of these when calling `createDynamicQRDate()`
+### Input object
 
 Attribute    | Type                     | Required                      | Explanation
 -------------|--------------------------|-------------------------------|--------------------
@@ -76,7 +74,7 @@ Attribute    | Type                     | Required                      | Explan
 `params.formatter`  | CustomQRDateURLFormatter | See above | A formatter
 `params.privateKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. The key *can* be base64url encoded, and the function will try to parse it for you.
 
-#### Output object
+### Output object
 
 All the return values are designed to be safe to be shown to the client:
 
@@ -86,7 +84,7 @@ Attribute    | Type                     | Explanation
 `url`        | string                   | The text to render into a QR code.
 `signature`  | string                   | Base64url-encoded signed timestamp
 
-#### Example
+### Example
 
 ```ts
 import { createDynamicQRDate } from 'qrdate';
@@ -109,7 +107,7 @@ console.log(qrDateDynamic);
 
 ```
 
-### `createStaticQRDate(privateKey: KeyLike): StaticQRDate`
+## `createStaticQRDate(privateKey: KeyLike): StaticQRDate`
 
 Create a Static QR Date spec object with offline verification. Use this function to create QR Date that users can verify *without* your website using a certificate chain. The client flow is:
 
@@ -129,7 +127,7 @@ Attribute    | Type                     | Required                      | Explan
 -------------|--------------------------|-------------------------------|--------------------
 `privateKey` | KeyLike (string / Buffer / KeyObject) | Yes | Your ed25519 private key. The key *can* be base64url encoded, and the function will try to parse it for you.
 
-#### Output object
+### Output object
 
 All the return values are designed to be safe to be shown to the client:
 
@@ -140,7 +138,7 @@ Attribute     | Type                     | Explanation
 `signature`   | string                   | Base64url-encoded signed timestamp
 `fingerprint` | string                   | Base64url-encoded fingerprint hashed from your public key
 
-#### Example
+### Example
 
 
 ```ts
@@ -168,7 +166,7 @@ console.log(qrDateStatic);
 //
 ```
 
-### `verifyDynamicQRDate(params: { signature: string; timestamp: string|number; publicKey: KeyLike }): boolean`
+## `verifyDynamicQRDate(params: { signature: string; timestamp: string|number; publicKey: KeyLike }): boolean`
 
 Verify that the signature on a signed dynamic QR Date timestamp is valid.
 
@@ -178,7 +176,7 @@ Attribute    | Type                                        | Required | Explanat
 `params.timestamp`  | number / string                      | Yes      | Signature passed from client
 `params.publicKey` | KeyLike (string / Buffer / KeyObject) | Yes      | Your ed25519 public key. The key *can* be base64url encoded, and the function will try to parse it for you.
 
-#### Example
+### Example
 
 ```ts
 import { verifyDynamicQRDate } from 'qrdate';
@@ -193,7 +191,7 @@ console.log(valid);
 // boolean ---^
 ```
 
-### `verifyStaticQRDate(params: { signature: string; timestamp: string|number; fingerprint: string; publicKey: KeyLike }): boolean`
+## `verifyStaticQRDate(params: { signature: string; timestamp: string|number; fingerprint: string; publicKey: KeyLike }): boolean`
 
 Verify that the signature on a signed static QR Date timestamp is valid.
 
@@ -204,7 +202,7 @@ Attribute            | Type                                  | Required         
 `params.fingerprint` | string                                | Yes                           | Public key fingerprint passed from qrdate:// URL
 `params.publicKey`   | KeyLike (string / Buffer / KeyObject) | Yes                           | Ed25519 public key corresponding to the fingerprint. The key *can* be base64url encoded, and the function will try to parse it for you.
 
-#### Example
+### Example
 
 ```ts
 import { verifyStaticQRDate } from 'qrdate';
@@ -220,11 +218,11 @@ console.log(valid);
 // boolean ---^
 ```
 
-### `generateKeys(): { privateKey: string|KeyObject; publicKey: string|KeyObject }`
+## `generateKeys(): { privateKey: string|KeyObject; publicKey: string|KeyObject }`
 
 Use to generate a pair of keys. You can use only the `privateKey` to interact with the library - any public keys that are required can be derived from it. **Store your private key in a safe place!** When used with QR Date it is essentially *a key to the future*.
 
-#### Example
+### Example
 
 ```ts
 import { generateKeys } from 'qrdate';
@@ -234,6 +232,8 @@ const { privateKey, publicKey } = generateKeys(true);
 console.log(privateKey); // -----BEGIN PRIVATE KEY----- ... -----END PRIVATE KEY-----
 console.log(publicKey); // -----BEGIN PUBLIC KEY----- ... -----END PUBLIC KEY-----
 ```
+
+# QR Date URL Specification
 
 ## Dynamic QR Date v1 spec
 
@@ -245,7 +245,10 @@ https://qrdate.org/v?s=twBgNlHANnq5BX1IJb6qAWyfeQkARwIFGiOysZAAIcyba08piw30358Ri
 
 ### Important security considerations
 
-**DO NOT LEAK PRIVATE INFORMATION BY STORING ANY SORT OF STATE IN THE URL. DO NOT STORE IP ADDRESSES OF PEOPLE WHO REQUEST DATES.** It is imperative that you stick to the spec. Do not create any sort of unintended tracking mechanisms by adding your own parameters or state.
+- **DO NOT LEAK PRIVATE INFORMATION BY STORING ANY SORT OF STATE IN THE URL.**
+- **DO NOT STORE IP ADDRESSES OF PEOPLE WHO REQUEST DATES.**
+ 
+It is imperative that you stick to the spec. Do not create any sort of unintended tracking mechanisms by adding your own parameters or state.
 
 ### Required query parameters
 
@@ -268,7 +271,7 @@ Use this spec when you want to use QR Date without hosting a separate verificati
 qrdate://v?s=d4pOIiiOpOv5q0FPaPUYgZDJERwpZ5JKYOex3nOKLCgMWUL9t3VKCHAdRZJs4a6x5HVTeMaSfSyVi4hK3GhCDQ&t=1646148299487&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE
 ```
 
-### Don't add your own parameters in this one either!
+### Don't add your own parameters in this one either
 
 Sticking to the spec means you're only doing the bare necessary thing- signing a timestamp, and not leaking someone's private information by mistake.
 
@@ -288,8 +291,14 @@ This type of URL can be parsed without external parties as it contains both the 
 
 ## Contact
 
-- Website: [https://QRDate.org](https://QRDate.org)
+- Website: [https://qrdate.org](https://qrdate.org)
 - Twitter: [@QRDate](https://twitter.com/QRDate)
+
+## Contributors
+
+- miunau
+- Kris
+- Cendyne
 
 ## License
 
