@@ -267,7 +267,7 @@ Parameter | Explanation
 
 ## Static QR Date v1 spec
 
-Use this spec when you want to use QR Date without hosting a separate verification page. When using `createQRDate` from this package, use the base `qrdate://` and you will a URL in the correct format:
+Use this spec when you want to use QR Date without hosting a separate verification page. 
 
 ```
 qrdate://v?s=d4pOIiiOpOv5q0FPaPUYgZDJERwpZ5JKYOex3nOKLCgMWUL9t3VKCHAdRZJs4a6x5HVTeMaSfSyVi4hK3GhCDQ&t=1646148299487&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE
