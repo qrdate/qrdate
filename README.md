@@ -303,7 +303,11 @@ This type of URL can be parsed without external parties as it contains both the 
 - Cendyne
 - ...and others preferring to stay anonymous
 
-Want to help out? We welcome contributions and people adopting this idea into other languages and environments. Please conform to the QR Date specification to keep things interoperable.
+Want to help out? We welcome contributions and people adopting this idea into other languages and environments. Please conform to the QR Date specification to keep things interoperable. If you have ideas for the spec, please file an issue!
+
+[QRDate.org](https://qrdate.org) is hosted on [Vercel](https://www.vercel.com).
+
+[![Powered by Vercel](powered-by-vercel.svg)](https://www.vercel.com)
 
 ## License
 
