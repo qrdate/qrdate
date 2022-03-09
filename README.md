@@ -305,6 +305,10 @@ This type of URL can be parsed without external parties as it contains both the 
 
 Want to help out? We welcome contributions and people adopting this idea into other languages and environments. Please conform to the QR Date specification to keep things interoperable. If you have ideas for the spec, please file an issue!
 
+### Thanks
+
+Hosting for QRDate.org is sponsored by Vercel.
+
 [![Powered by Vercel](powered-by-vercel.svg)](https://vercel.com/?utm_source=qrdate&utm_campaign=oss)
 
 ## License
