@@ -1,5 +1,4 @@
-<a href="https://qrdate.org" target="_blank">![QR Date - Signed timestamps inside QR codes for verifying dates in realtime reporting.](https://user-images.githubusercontent.com/55932282/156223938-b229f473-476b-4376-bd2f-08d1746457bf.png)</a>
-
+<a href="https://qrdate.org" target="_blank">![QR Date - Signed timestamps inside QR codes for verifying dates in realtime reporting.](https://user-images.githubusercontent.com/55932282/158589719-838b0da3-9ee0-435f-a599-eaaa7d39f8a3.jpg)</a>
 
 # QR Date
 
