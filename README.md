@@ -1,17 +1,20 @@
 <a href="https://qrdate.org" target="_blank">![QR Date - Signed timestamps inside QR codes for verifying dates in realtime reporting.](https://user-images.githubusercontent.com/55932282/156223938-b229f473-476b-4376-bd2f-08d1746457bf.png)</a>
 
 
-# QR Date (QR Time)
+# QR Date
 
 ![CI passing](https://github.com/qrdate/qrdate/actions/workflows/node.js.yml/badge.svg)
 
 This is the reference implementation for the first version of [QR Date](https://qrdate.org), a signed timestamp inside a QR code that you can use to verify the date in (near-) real-time photojournalism, photo/video uploads and live streams.
 
-## What is it for?
+**We are actively working on both the specification and this library.** Things may change dramatically in the coming weeks.
 
-QR Date is a specification for verifying the date a photo or video was taken by having a trusted third party sign timestamps and encode them in a QR code visible in the frame. It can be used to verify the date in rapidly disseminated photo- or videography where a large amount of people will be able to see and verify the code shown within a reasonable time from publishing, which is measured in seconds to minutes today.
+## What is it?
 
-It provides a kind of social proof of other people observing a clock, given to you by a *trusted third party*, that you are holding up in a photo instead of writing the date on a piece of paper. It does *not* work against the past (taking snapshots of the produced codes and using them later) - the point is to try to guard media against the *future*. Therefore, unseen QR Dates are meant to have a lifespan after which they should be considered tainted.
+QR Date is a trusted timestamp that you can physically include in photos, videos and live streams using QR codes and audible data signals. It is for newsrooms and social media users. Our goal is to help verify dates in photos and videos by visibly or audibly including trusted timestamps in the contents.
+
+- **In newsrooms,** it helps publishers making editorial decisions on which media to publish from internal and third parties.
+- **On social media,** it works via rapid dissemination to other people who can can help verify the code and its authenticity if it's considered reasonably fresh.
 
 ## The need to use something like QR Date arises, when..
 
@@ -22,31 +25,46 @@ The traditional method is to write the current date on a piece of paper or, if o
 
 When disseminated rapidly to hundreds or thousands of people, a QR Date displayed in a photo or video can constitute social proof — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
 
-## The physical act of using a QR Date involves either:
+## How is it used?
 
-1. Holding up a smartphone or tablet in view of the camera, displaying the QR Date from a website or broadcast TV (in case a TV station would be broadcasting it), or
-2. Holding up a printed version of the QR Date in a photo or video, replacing regular written text on paper.
+QR Dates are included in photos and videos using physical means to make faking them harder (but not impossible) within a reasonable amount of time.
 
-It is also possible to implement QR Dates as a middleman service for app backends, which would then be acting as the trusted third party.
+- **QR Codes:** Physically hold a device or piece of paper displaying the QR code to the camera. With photos, take several with different codes. With video, you can move the device or paper around a little.
+- **Sonify:** Play the data signal from a speaker over the air close enough so that the microphone on your camera can pick it up over background noise. It does not need to be played loud in a quiet environment. Natural reverb and other ambient sounds will make the signal harder to fake.
 
-For example, when uploading photos through a messenger service, the service can sign the photos upon upload date and superimpose the QR Date onto it. Any further uploads to date the photo again would have to either crop the code out or otherwise mangle it so much that it would raise suspicion. For videos, the QR Date can be superimposed as either moving around in the frame, switch places, or other motion to make it harder to superimpose another code later.
+Observers of QR Dates included in photos and videos can look for normal signs of tampering and verify the date independently without any proprietary tools.
+
+- **QR codes:** Any QR code reader will work with QR Dates visible within photos and videos.
+- **Data signals:** Programs such as fldigi can be used to decode the MT63 encoded signal.
+
+## Security and limitations
+
+**Like all media, QR Dates can be faked by embedding new codes into old photos and videos.** It is a new tool that does not replace old ones. It can and should be combined with other forensic tools to determine if an image has been manipulated.
+
+QR Dates have a "freshness", which declines with age multiplied by how easy is it to insert them into the media in question.
 
 ## How does it work?
 
-The principle is very simple. A timestamp is generated on the server, then signed using a private key to produce a verification signature. The QR code that you're seeing contains a URL with the timestamp and the signature. The signature can also be verified using a separately published public key.
+A public distributed time server returns the current time, which it signs using a private key to produce a verification signature.
+
+The URL embedded within the QR Date contains the timestamp and the signature.
+
+Accessing the URL will take observers to QRDate.org, or your website if you run your own implementation, which tells them if the date and signature is valid. The signature can also be verified using a public key without access to the internet.
+
+We are also working to specify QR Dates to work offline using a chained certificate and mobile apps.
 
 ## Types of QR Dates
 
 There are two types; Dynamic and Static.
 
-- Dynamic is for when you're hosting a verification page
-- Static is for QR Dates that need to be verified without another connection to your site
+- **Dynamic** for when you're hosting a verification page
+- **Static** for QR Dates that need to be generated and verified offline
 
 You can find the exact spec for both below the usage.
 
 # Using this library
 
-**This library does NOT generate the QR code image for you!** It only helps you conform to the QR Date spec. You need to feed the output of the date creation function (specifically, the `url` value) into a QR code image generator to get the correct output image.
+**This library does NOT generate the QR code image for you!** It only aims to help you conform to the QR Date spec. You need to feed the output of the date creation function (specifically, the `url` value) into a QR code image generator to get the correct output image.
 
 **This is an ES module written in TypeScript.** CommonJS is *not* supported. The minimum NodeJS version is 14.19.0.
 
@@ -83,6 +101,7 @@ Attribute    | Type                     | Explanation
 `timestamp`  | number                   | UNIX timestamp
 `url`        | string                   | The text to render into a QR code.
 `signature`  | string                   | Base64url-encoded signed timestamp
+`version`    | number                   | The version of the QR Date
 
 ### Example
 
@@ -101,7 +120,7 @@ console.log(qrDateDynamic);
 // -----------^
 // {
 //   timestamp: 1646109781467,
-//   url: "https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467",
+//   url: "https://qrdate.org/v?s=x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA&t=1646109781467&v=1",
 //   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA",
 // }
 
@@ -109,11 +128,13 @@ console.log(qrDateDynamic);
 
 ## `createStaticQRDate(privateKey: KeyLike): StaticQRDate`
 
+**Note: This is not production ready. The certificate chain is still on a concept level.**
+
 Create a Static QR Date spec object with offline verification. Use this function to create QR Date that users can verify *without* your website using a certificate chain. The client flow is:
 
 For users wanting to display codes:
 
-1. User requests your website.
+1. User requests your website or uses an offline app.
 2. Your server calls `createStaticQRDate`, returning the results to the client.
 3. Draw the QR code on the client from the `url` property on the return object.
 
@@ -137,6 +158,7 @@ Attribute     | Type                     | Explanation
 `url`         | string                   | The text to render into a QR code.
 `signature`   | string                   | Base64url-encoded signed timestamp
 `fingerprint` | string                   | Base64url-encoded fingerprint hashed from your public key
+`version`     | number                   | The version of the QR Date
 
 ### Example
 
@@ -154,13 +176,14 @@ console.log(qrDateStatic);
 // -----------^
 // {
 //   timestamp: 1646142017145,
-//   url: 'qrdate://v?s=tyYD957Q3i6TGUJi7-xzypIl4Be6mM8Jqvc2-nAswRuTadlCEELtMnXWqykcpzneuXJa772vNXc3T0pQFcPBBw&t=1646142017145&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE',
+//   url: 'qrdate://v?s=tyYD957Q3i6TGUJi7-xzypIl4Be6mM8Jqvc2-nAswRuTadlCEELtMnXWqykcpzneuXJa772vNXc3T0pQFcPBBw&t=1646142017145&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE&v=1',
 //   signature: 'tyYD957Q3i6TGUJi7-xzypIl4Be6mM8Jqvc2-nAswRuTadlCEELtMnXWqykcpzneuXJa772vNXc3T0pQFcPBBw',
-//   fingerprint: 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE'
+//   fingerprint: 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE',
+//   version: 1
 // }
 //
-// In the above url, `v` has been added after qrdate:// automatically.
-// If you are making your own implementation, be sure to include the `v` for compatibility.
+// In the above url, `/v` has been added after qrdate:// automatically.
+// If you are making your own implementation, be sure to include the `/v` for compatibility.
 // A static URL should always start with `qrdate://v` to keep it universal and not to clutter the produced QR code further.
 // Please see the spec for V1 Static URLs for further info.
 //
@@ -184,6 +207,7 @@ import { verifyDynamicQRDate } from 'qrdate';
 const valid = verifyDynamicQRDate({
   signature: "x9hKYrJH0e0BPyVqwnKMAMmxEudkvJccqzjHgaheWFJEd86rW_XdwCKZid7k0teMq7Ygp1PfAJhnT64WcyD6CA", 
   timestamp: 1646109781467,
+  version: 1,
   publicKey: `-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAJH6tPGKF1ZCMP3DUdpiin7rDLmVb/9A1zyllxaU6cjg=\n-----END PUBLIC KEY-----`; // or a Buffer or KeyObject
 });
 
@@ -192,6 +216,8 @@ console.log(valid);
 ```
 
 ## `verifyStaticQRDate(params: { signature: string; timestamp: string|number; fingerprint: string; publicKey: KeyLike }): boolean`
+
+**Note: This is not production ready. The certificate chain is still on a concept level.**
 
 Verify that the signature on a signed static QR Date timestamp is valid.
 
@@ -211,6 +237,7 @@ const valid = verifyDynamicQRDate({
   timestamp: 1646147373409,
   signature: 'SARv4c8pJYVxqEK8BCcPy8dgXEAkyWDPRAhvT70RotaHgnko1BkBh-maNzqAicDzqcz7EV65OwLDno7HWT1iAg',
   fingerprint: 'soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE',
+  version: 1,
   publicKey: `-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAyHAuTvSG6RZaKGOfzI6iZ8NVaebZpFAFEN/85o6c3nE=\n-----END PUBLIC KEY-----` // or Buffer or KeyObject
 });
 
@@ -242,7 +269,7 @@ This is the initial version of the specification. If you have any ideas or input
 Use this spec when you're hosting a verification page for QR Dates on your server. Anyone scanning a QR Date will load your website for verification. The public key will not be included in the generated URL, so it can be shorter.
 
 ```
-https://qrdate.org/v?s=twBgNlHANnq5BX1IJb6qAWyfeQkARwIFGiOysZAAIcyba08piw30358RiK9GmCbl3LfloNxoUfsdt6eeKJkyDQ&t=1646148299484
+https://qrdate.org/v?s=twBgNlHANnq5BX1IJb6qAWyfeQkARwIFGiOysZAAIcyba08piw30358RiK9GmCbl3LfloNxoUfsdt6eeKJkyDQ&t=1646148299484&v=1
 ```
 
 ### Important security considerations
@@ -260,6 +287,7 @@ Parameter | Explanation
 ----------|--------------
 `t`       | Timestamp (UNIX)
 `s`       | Signature (ed25519)
+`v`       | Version (1)
 
 ### Format the beginning of the URL
 
@@ -270,7 +298,7 @@ Parameter | Explanation
 Use this spec when you want to use QR Date without hosting a separate verification page. 
 
 ```
-qrdate://v?s=d4pOIiiOpOv5q0FPaPUYgZDJERwpZ5JKYOex3nOKLCgMWUL9t3VKCHAdRZJs4a6x5HVTeMaSfSyVi4hK3GhCDQ&t=1646148299487&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE
+qrdate://v?s=d4pOIiiOpOv5q0FPaPUYgZDJERwpZ5JKYOex3nOKLCgMWUL9t3VKCHAdRZJs4a6x5HVTeMaSfSyVi4hK3GhCDQ&t=1646148299487&f=soyUshlcjtJZ8LQVqu4_ObCykgpFN2EUmfoESVaReiE&v=1
 ```
 
 ### Don't add your own parameters in this one either
@@ -288,6 +316,7 @@ Parameter | Explanation
 `t`       | Timestamp (UNIX)
 `s`       | Signature
 `f`       | Public key fingerprint (SHA256) - **NOT** the public key
+`v`       | Version (1)
 
 This type of URL can be parsed without external parties as it contains both the signature and public key **fingerprint** (not the public key itself), which can be compared against a key store that you need to implement in a client application consuming these URLs. Therefore, for example, a system that generates QR Dates every minute through a script to serve on a static website is possible, without needing further web-based validation as long as the user has added the public key (that you must publish elsewhere) into their trusted list. For automatic validation, the consuming client must then implement some sort of a key store, which is outside the scope of this package.
 

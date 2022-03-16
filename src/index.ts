@@ -1,19 +1,19 @@
 import {
-  createHash,
-  createPrivateKey,
-  createPublicKey,
-  generateKeyPairSync,
-  randomBytes,
-  type KeyLike,
+    type KeyLike,
+    createHash,
+    createPrivateKey,
+    createPublicKey,
+    generateKeyPairSync,
+    randomBytes,
 } from 'node:crypto';
 
 import {
-  createDynamicQRDateURL,
-  createFingerprint,
-  createStaticQRDateURL,
-  sign,
-  verify,
-  type CustomQRDateURLFormatter
+    type CustomQRDateURLFormatter,
+    createDynamicQRDateURL,
+    createFingerprint,
+    createStaticQRDateURL,
+    sign,
+    verify,
 } from './lib.js';
 
 export * from './lib.js';
@@ -22,34 +22,48 @@ export * from './lib.js';
  * Dynamic QR Date object
  */
 export type DynamicQRDate = {
-  timestamp: number;
-  url: string;
-  signature: string;
+    timestamp: number;
+    url: string;
+    signature: string;
+    version: number;
 };
 
 /**
  * Static QR Date object
  */
 export type StaticQRDate = {
-  timestamp: number;
-  url: string;
-  signature: string;
-  fingerprint: string;
+    timestamp: number;
+    url: string;
+    signature: string;
+    fingerprint: string;
+    version: number;
 };
 
 function formatPrivateKey(privateKey: KeyLike) {
-  // If we're being passed base64url format keys, try to turn them into PEM keys
-  if (privateKey && typeof privateKey === 'string' && !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
-    privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString('base64')}\n-----END PRIVATE KEY-----`;
-  }
-  return privateKey;
+    // If we're being passed base64url format keys, try to turn them into PEM keys
+    if (
+        privateKey &&
+        typeof privateKey === 'string' &&
+        !privateKey.startsWith('-----BEGIN PRIVATE KEY-----')
+    ) {
+        privateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKey, 'base64url').toString(
+            'base64',
+        )}\n-----END PRIVATE KEY-----`;
+    }
+    return privateKey;
 }
 
 function formatPublicKey(publicKey: KeyLike) {
-  if (publicKey && typeof publicKey === 'string' && !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
-    publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString('base64')}\n-----END PUBLIC KEY-----`;
-  }
-  return publicKey;
+    if (
+        publicKey &&
+        typeof publicKey === 'string' &&
+        !publicKey.startsWith('-----BEGIN PUBLIC KEY-----')
+    ) {
+        publicKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(publicKey, 'base64url').toString(
+            'base64',
+        )}\n-----END PUBLIC KEY-----`;
+    }
+    return publicKey;
 }
 
 /**
@@ -64,39 +78,43 @@ function formatPublicKey(publicKey: KeyLike) {
  * @returns {DynamicQRDate} Dynamic QR Date object
  */
 export function createDynamicQRDate({
-  privateKey,
-  urlBase,
-  formatter,
-}: {
-  privateKey: KeyLike;
-  urlBase?: string;
-  formatter?: CustomQRDateURLFormatter;
-}): DynamicQRDate {
-  if (!privateKey) throw 'privateKey is required';
-  if (!urlBase && !formatter) throw 'urlBase or formatter is required';
-
-  privateKey = formatPrivateKey(privateKey);
-  if(typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
-  
-  // Generate a timestamp
-  const timestamp = new Date().getTime();
-
-  // Sign the timestamp
-  const signature = sign(timestamp, privateKey);
-
-  // Create the QR code url
-  const url = createDynamicQRDateURL({
+    privateKey,
     urlBase,
-    timestamp,
-    signature,
     formatter,
-  });
+}: {
+    privateKey: KeyLike;
+    urlBase?: string;
+    formatter?: CustomQRDateURLFormatter;
+}): DynamicQRDate {
+    if (!privateKey) throw 'privateKey is required';
+    if (!urlBase && !formatter) throw 'urlBase or formatter is required';
 
-  return {
-    timestamp,
-    url,
-    signature,
-  }
+    privateKey = formatPrivateKey(privateKey);
+    if (typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
+
+    const version = 1;
+
+    // Generate a timestamp
+    const timestamp = new Date().getTime();
+
+    // Sign the timestamp
+    const signature = sign(timestamp, privateKey, version);
+
+    // Create the QR code url
+    const url = createDynamicQRDateURL({
+        urlBase,
+        timestamp,
+        signature,
+        formatter,
+        version,
+    });
+
+    return {
+        timestamp,
+        url,
+        signature,
+        version,
+    };
 }
 
 /**
@@ -106,34 +124,35 @@ export function createDynamicQRDate({
  * @returns {StaticQRDate} QR Date object
  */
 export function createStaticQRDate(privateKey: KeyLike): StaticQRDate {
-  if (!privateKey) throw 'privateKey is required';
+    if (!privateKey) throw 'privateKey is required';
 
-  privateKey = formatPrivateKey(privateKey);
-  if(typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
+    privateKey = formatPrivateKey(privateKey);
+    if (typeof privateKey === 'string') privateKey = createPrivateKey(privateKey);
 
-  // If there's no public key passed, derive one from the private key
-  const publicKey = createPublicKey(privateKey);
+    // If there's no public key passed, derive one from the private key
+    const publicKey = createPublicKey(privateKey);
 
-  // Generate a timestamp
-  const timestamp = new Date().getTime();
+    // Generate a timestamp
+    const timestamp = new Date().getTime();
 
-  // Sign the timestamp
-  const signature = sign(timestamp, privateKey);
-  const fingerprint = createFingerprint(publicKey);
+    // Sign the timestamp
+    const signature = sign(timestamp, privateKey, 1);
+    const fingerprint = createFingerprint(publicKey);
 
-  // Create the QR code url
-  const url = createStaticQRDateURL({
-    timestamp,
-    signature,
-    fingerprint,
-  });
+    // Create the QR code url
+    const url = createStaticQRDateURL({
+        timestamp,
+        signature,
+        fingerprint,
+    });
 
-  return {
-    timestamp,
-    url,
-    signature,
-    fingerprint
-  }
+    return {
+        timestamp,
+        url,
+        signature,
+        fingerprint,
+        version: 1,
+    };
 }
 
 /**
@@ -146,20 +165,20 @@ export function createStaticQRDate(privateKey: KeyLike): StaticQRDate {
  * @returns {boolean} True if valid
  */
 export function verifyDynamicQRDate({
-  timestamp,
-  signature,
-  publicKey,
-}:{
-  timestamp: string|number;
-  signature: string;
-  publicKey: KeyLike;
+    timestamp,
+    signature,
+    publicKey,
+}: {
+    timestamp: string | number;
+    signature: string;
+    publicKey: KeyLike;
 }): boolean {
-  if(!timestamp) throw 'timestamp is required';
-  if(!signature) throw 'signature is required';
-  if(!publicKey) throw 'publicKey is required';
-  publicKey = formatPublicKey(publicKey);
-  if(typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
-  return verify(timestamp, publicKey, signature);
+    if (!timestamp) throw 'timestamp is required';
+    if (!signature) throw 'signature is required';
+    if (!publicKey) throw 'publicKey is required';
+    publicKey = formatPublicKey(publicKey);
+    if (typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
+    return verify(timestamp, publicKey, signature);
 }
 
 /**
@@ -172,29 +191,29 @@ export function verifyDynamicQRDate({
  * @returns {boolean} True if valid
  */
 export function verifyStaticQRDate({
-  timestamp,
-  signature,
-  fingerprint,
-  publicKey,
-}:{
-  timestamp: string|number;
-  signature: string;
-  fingerprint: string;
-  publicKey: KeyLike;
+    timestamp,
+    signature,
+    fingerprint,
+    publicKey,
+}: {
+    timestamp: string | number;
+    signature: string;
+    fingerprint: string;
+    publicKey: KeyLike;
 }): boolean {
-  if(!timestamp) throw 'timestamp is required';
-  if(!signature) throw 'signature is required';
-  if(!fingerprint) throw 'fingerprint is required';
-  if(!publicKey) throw 'publicKey is required';
+    if (!timestamp) throw 'timestamp is required';
+    if (!signature) throw 'signature is required';
+    if (!fingerprint) throw 'fingerprint is required';
+    if (!publicKey) throw 'publicKey is required';
 
-  publicKey = formatPublicKey(publicKey);
-  if(typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
+    publicKey = formatPublicKey(publicKey);
+    if (typeof publicKey === 'string') publicKey = createPublicKey(publicKey);
 
-  // If there's a private key passed, derive a public key first if one doesn't exist
-  const verifyFingerprint = createFingerprint(publicKey);
+    // If there's a private key passed, derive a public key first if one doesn't exist
+    const verifyFingerprint = createFingerprint(publicKey);
 
-  if(verifyFingerprint !== fingerprint) return false;
-  return verify(timestamp, publicKey, signature);
+    if (verifyFingerprint !== fingerprint) return false;
+    return verify(timestamp, publicKey, signature);
 }
 
 /**
@@ -202,25 +221,25 @@ export function verifyStaticQRDate({
  * @param {boolean} [asString] Return keys as string, not KeyObject (default true)
  * @returns {object} { privateKey: string | KeyObject, publicKey: string | KeyObject }
  */
-export function generateKeys(asString: boolean = true) {
-  const { privateKey, publicKey } = generateKeyPairSync('ed25519', {
-    publicKeyEncoding: {
-      type: 'spki',
-      format: 'pem'
-    },
-    privateKeyEncoding: {
-      type: 'pkcs8',
-      format: 'pem',
+export function generateKeys(asString = true) {
+    const { privateKey, publicKey } = generateKeyPairSync('ed25519', {
+        publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem',
+        },
+        privateKeyEncoding: {
+            type: 'pkcs8',
+            format: 'pem',
+        },
+    });
+    if (asString) {
+        return {
+            privateKey: privateKey.toString(),
+            publicKey: publicKey.toString(),
+        };
     }
-  })
-  if(asString) {
     return {
-      privateKey: privateKey.toString(),
-      publicKey: publicKey.toString(),
-    }
-  }
-  return {
-    privateKey,
-    publicKey,
-  }
+        privateKey,
+        publicKey,
+    };
 }

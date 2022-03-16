@@ -1,33 +1,38 @@
 {
-  "name": "qrdate",
-  "version": "0.4.4",
-  "description": "QR Date (QR Time): Signed timestamps inside QR codes for verifying dates in realtime reporting",
-  "type": "module",
-  "exports": {
-    "./types": "./dist/index.d.ts",
-    "./package.json": "./package.json",
-    ".": "./dist/index.js"
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": "^14.19.0 || >=16.0.0"
-  },
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "test": "tsm node_modules/uvu/bin.js tests",
-    "build": "rm -rf dist && tsc"
-  },
-  "author": "QRDate.org + contributors",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/qrdate/qrdate.git"
-  },
-  "devDependencies": {
-    "@types/node": "^17.0.21",
-    "tsm": "^2.2.1",
-    "typescript": "^4.5.5",
-    "uvu": "^0.5.3"
-  }
+    "name": "qrdate",
+    "version": "0.5.0",
+    "description": "QR Date: Trusted timestamps that you can physically include in photos, videos and live streams using QR codes and audible data signals.",
+    "type": "module",
+    "exports": {
+        "./types": "./dist/index.d.ts",
+        "./package.json": "./package.json",
+        ".": "./dist/index.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": "^14.19.0 || >=16.0.0"
+    },
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "test": "tsm node_modules/uvu/bin.js tests",
+        "build": "rm -rf dist && tsc"
+    },
+    "author": "QRDate.org + contributors",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/qrdate/qrdate.git"
+    },
+    "devDependencies": {
+        "@types/node": "^17.0.21",
+        "@typescript-eslint/eslint-plugin": "^5.14.0",
+        "@typescript-eslint/parser": "^5.14.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.5.0",
+        "prettier": "^2.5.1",
+        "tsm": "^2.2.1",
+        "typescript": "^4.5.5",
+        "uvu": "^0.5.3"
+    }
 }
