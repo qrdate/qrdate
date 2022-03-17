@@ -10,19 +10,11 @@ This is the reference implementation for the first version of [QR Date](https://
 
 ## What is it?
 
-QR Date is a trusted timestamp that you can physically include in photos, videos and live streams using QR codes and audible data signals. It is for newsrooms and social media users. Our goal is to help verify dates in photos and videos by visibly or audibly including trusted timestamps in the contents.
+QR Date is a trusted timestamp that you can physically include in photos, videos and live streams using QR codes and audible data signals. It is for newsrooms, citizen journalists and social media users who wish to verify dates in videos, live streams and photos by visibly and/or audibly including trusted timestamps in the content.
 
-- **In newsrooms,** it helps publishers making editorial decisions on which media to publish from internal and third parties.
-- **On social media,** it works via rapid dissemination to other people who can can help verify the code and its authenticity if it's considered reasonably fresh.
-
-## The need to use something like QR Date arises, when..
-
-1. You have a photograph or video you want to make and send to many people, rapidly.
-2. You need to prove beyond a reasonable doubt that the event or subject you are photographing *happened or existed* at the moment you took the photo or video.
-
-The traditional method is to write the current date on a piece of paper or, if one is available, hold up a newspaper from the day. Besides requiring materials, neither does not *definitely* verify that the event in the picture *happened right now*. It is impossible to validate past events in this way, but if you include a timestamp that was signed by a trusted third party *within your photo, in a reasonably non-fakeable way*, it is then provable beyond a reasonable doubt that you indeed are **photographing the near-present**.
-
-When disseminated rapidly to hundreds or thousands of people, a QR Date displayed in a photo or video can constitute social proof — you can say "thousands of people confirmed this individually" while feasibly expecting that the code could not have been faked within the short period of time between you taking the photo, distributing it, and others confirming the code contained in it.
+- **For newsrooms**, it helps publishers to make better informed editorial decisions on which media to trust from professional and citizen journalists.
+- **For citizen journalists**, it allows the public to play an active role in news, helping to verify when what's being recorded happened.
+- **For social media users**, it works via rapid dissemination to people around the world who can help to verify the QR Date and the media's authenticity.
 
 ## How is it used?
 
@@ -40,26 +32,23 @@ Observers of QR Dates included in photos and videos can look for normal signs of
 
 **Like all media, QR Dates can be faked by embedding new codes into old photos and videos.** It is a new tool that does not replace old ones. It can and should be combined with other forensic tools to determine if an image has been manipulated.
 
-QR Dates have a "freshness", which declines with age multiplied by how easy is it to insert them into the media in question.
-
 ## How does it work?
 
-A public distributed time server returns the current time, which it signs using a private key to produce a verification signature.
+A server returns the current time, which it signs using a private key to produce a verification signature.
 
 The URL embedded within the QR Date contains the timestamp and the signature.
 
 Accessing the URL will take observers to QRDate.org, or your website if you run your own implementation, which tells them if the date and signature is valid. The signature can also be verified using a public key without access to the internet.
 
+### Distributed clock source
+
+We are working on making qrdate compatible with [Roughtime](https://blog.cloudflare.com/roughtime/) for a distributed, auditable clock source.
+
+Want to help? Feel free to raise issues with your ideas!
+
+### Offline use
+
 We are also working to specify QR Dates to work offline using a chained certificate and mobile apps.
-
-## Types of QR Dates
-
-There are two types; Dynamic and Static.
-
-- **Dynamic** for when you're hosting a verification page
-- **Static** for QR Dates that need to be generated and verified offline
-
-You can find the exact spec for both below the usage.
 
 # Using this library
 
@@ -129,7 +118,7 @@ console.log(qrDateDynamic);
 
 **Note: This is not production ready. The certificate chain is still on a concept level.**
 
-Create a Static QR Date spec object with offline verification. Use this function to create QR Date that users can verify *without* your website using a certificate chain. The client flow is:
+Create a Static QR Date spec object for offline verification. Use this function to create QR Date that users can verify *without* your website using a certificate chain. The client flow is:
 
 For users wanting to display codes:
 
