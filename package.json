@@ -1,6 +1,6 @@
 {
     "name": "qrdate",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "description": "QR Date: Trusted timestamps that you can physically include in photos, videos and live streams using QR codes and audible data signals.",
     "type": "module",
     "exports": {
